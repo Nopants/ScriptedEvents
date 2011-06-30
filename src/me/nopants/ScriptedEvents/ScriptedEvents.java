@@ -24,7 +24,7 @@ public class ScriptedEvents extends JavaPlugin {
 	//private Map<CommandSender, SEtrigger> editTrigger = new HashMap<CommandSender, SEtrigger>();
 	//private Map<CommandSender, Integer> editStep = new HashMap<CommandSender, Integer>();
 	
-	String version = "1.5";
+	String version = "1.5.3";
 
 	// the main function called onEnable Plugin 
 	public void onEnable() {

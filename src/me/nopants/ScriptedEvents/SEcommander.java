@@ -16,8 +16,8 @@ import com.nijiko.permissions.PermissionHandler;
 public class SEcommander {
 	private ScriptedEvents plugin;
 	private SEutils utils;
-	private PermissionHandler permissionHandler;
-	private boolean hasPermissions = false;
+	public PermissionHandler permissionHandler;
+	public boolean hasPermissions = false;
 	
 	private static String seNode = "se";
 	private static String debugNode = ".debug";
@@ -1256,7 +1256,7 @@ public class SEcommander {
 		if(checkPermission(player, seNode+variableNode+createNode)){
 			if (args.length == 2 || args.length == 3) {
 				
-				if ((args[0].equalsIgnoreCase("int")||args[0].equalsIgnoreCase("string")||args[0].equalsIgnoreCase("list"))) {
+				if ((args[0].equalsIgnoreCase("int")||args[0].equalsIgnoreCase("string")||args[0].equalsIgnoreCase("set"))) {
 
 					if (args.length == 3) {
 						// String Variable
@@ -1318,8 +1318,8 @@ public class SEcommander {
 					}
 					
 					if (args.length == 2) {
-						// List Variable
-						if (args[0].equalsIgnoreCase("list")) {
+						// set Variable
+						if (args[0].equalsIgnoreCase("set")) {
 							if (!plugin.SEdata.variableExists(args[1])) {
 								
 								Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
@@ -1328,7 +1328,7 @@ public class SEcommander {
 								
 								plugin.SEdata.setSetVarList(tempSetVarList);
 								
-								utils.SElog(1, plugin.SEdata.getSetVarList().get(args[1]).toString()); // debug
+								//utils.SElog(1, plugin.SEdata.getSetVarList().get(args[1]).toString()); // debug
 								
 								plugin.SEdata.rewriteSetVarFile(args[1]);
 								//plugin.SEdata.refreshSetVarList();
@@ -1343,7 +1343,7 @@ public class SEcommander {
 						}	
 					}
 				} else {
-					utils.SEmessage(sender, "Variable-type has to be 'int', 'string' or 'list'!");
+					utils.SEmessage(sender, "Variable-type has to be 'int', 'string' or 'set'!");
 					result = false;
 				}
 			} else {
@@ -1412,28 +1412,33 @@ public class SEcommander {
 		
 		Player player = senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+editNode)){
-			if (args.length == 2 || args.length == 3) {
-				
-				// edit int or string
-				if (args.length == 2) {
-					if (tempStringVarList.containsKey(args[0])) {
-						try {
-							tempStringVarList.put(args[0], args[1]);
-							plugin.SEdata.setStringVarList(tempStringVarList);
-							plugin.SEdata.rewriteStringVarFile();
-							plugin.SEdata.refreshStringVarList();
-							
-							if (sender instanceof Player)
-								utils.SEmessage(sender, "Value changed!");
-							result = true;
-						} catch (Exception e) {
-							utils.SElog(3, "Couldn't change value!");
-							result = false;				
+			if (args.length == 3 || args.length == 4) {
+			
+				if (args.length == 3) {
+					// edit string
+					if (args[0].equalsIgnoreCase("string")) {
+						if (tempStringVarList.containsKey(args[1])) {
+							try {
+								tempStringVarList.put(args[1], args[2]);
+								plugin.SEdata.setStringVarList(tempStringVarList);
+								plugin.SEdata.rewriteStringVarFile();
+								plugin.SEdata.refreshStringVarList();
+								
+								if (sender instanceof Player)
+									utils.SEmessage(sender, "Value changed!");
+								result = true;
+							} catch (Exception e) {
+								utils.SElog(3, "Couldn't change value!");
+								result = false;
+							}
 						}
-					} else {
-						if (tempIntVarList.containsKey(args[0])) {
+					}
+						
+					// edit int
+					if (args[0].equalsIgnoreCase("int")) {
+						if (tempIntVarList.containsKey(args[1])) {
 							
-							String stringValue = plugin.triggerManager.resolveVariables(args[1], new SEentitySet());
+							String stringValue = plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 							int value = 0;
 							boolean intArgs = false;
 							
@@ -1448,7 +1453,7 @@ public class SEcommander {
 							if (intArgs) {
 								try {
 									
-									tempIntVarList.put(args[0], value);
+									tempIntVarList.put(args[1], value);
 									plugin.SEdata.setIntVarList(tempIntVarList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();
@@ -1472,46 +1477,55 @@ public class SEcommander {
 					}
 				}
 				
-				// edit list
-				
-				if (tempSetVarList.containsKey(args[0])) {
-					try {
-						Set<String> tempSetVar = tempSetVarList.get(args[0]);
-						if ((args[1].equalsIgnoreCase("remove")) || (args[1].equalsIgnoreCase("add")) || (args[1].equalsIgnoreCase("onlinePlayers"))) {
-							if (args.length == 3) {
-								if ((args[1].equalsIgnoreCase("remove")) && tempSetVar.contains(args[2])) {
-									tempSetVar.remove(args[2]);
-								}
-								if (args[1].equalsIgnoreCase("add")) {
-									tempSetVar.add(args[2]);
-								}
-							}
-							if (args.length == 2) {
-								if (args[1].equalsIgnoreCase("onlinePlayers")) {
-									tempSetVar.clear();
-									Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
-									for (int i=0; i < plugin.getServer().getOnlinePlayers().length; i++) {
-										tempSetVar.add(onlinePlayers[i].getName());
+				if (args.length == 3 || args.length == 4) {
+					// edit set
+					if (args[0].equalsIgnoreCase("set")) {
+						if (tempSetVarList.containsKey(args[1])) {
+							try {
+								Set<String> tempSetVar = tempSetVarList.get(args[1]);
+								if ((args[2].equalsIgnoreCase("remove")) || (args[2].equalsIgnoreCase("add")) || (args[2].equalsIgnoreCase("onlinePlayers"))) {
+									if (args.length == 4) {
+										if ((args[2].equalsIgnoreCase("remove")) && tempSetVar.contains(args[3])) {
+											tempSetVar.remove(args[3]);
+										}
+										if (args[2].equalsIgnoreCase("add")) {
+											tempSetVar.add(args[3]);
+										}
 									}
+									if (args.length == 3) {
+										if (args[2].equalsIgnoreCase("onlinePlayers")) {
+											tempSetVar.clear();
+											Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
+											for (int i=0; i < plugin.getServer().getOnlinePlayers().length; i++) {
+												tempSetVar.add(onlinePlayers[i].getName());
+											}
+										}
+									}
+									tempSetVarList.put(args[1], tempSetVar);
+									plugin.SEdata.setSetVarList(tempSetVarList);
+									plugin.SEdata.rewriteAllSetVarFiles();
+									//plugin.SEdata.refreshSetVarList();
+									
+									if (player!=null) {
+										utils.SEmessage(player, "Value changed!");
+										
+										if (plugin.SEdata.getDebugees(player))
+											utils.SElog(1, args[1]+": "+plugin.SEdata.getSetVarList().get(args[1]).toString()); // debug
+									}
+										
+									
+									result = true;
+									//utils.SElog(1, args[0]+": "+plugin.SEdata.getSetVarList().get(args[0]).toString()); // debug
 								}
+							} catch (Exception e) {
+								utils.SElog(3, "Couldn't change value!");
+								result = false;				
 							}
-							tempSetVarList.put(args[0], tempSetVar);
-							plugin.SEdata.setSetVarList(tempSetVarList);
-							plugin.SEdata.rewriteAllSetVarFiles();
-							//plugin.SEdata.refreshSetVarList();
-							
-							if (sender instanceof Player)
-								utils.SEmessage(sender, "Value changed!");
-							result = true;
-							utils.SElog(1, args[0]+": "+plugin.SEdata.getSetVarList().get(args[0]).toString()); // debug
+						} else {
+							utils.SEmessage(sender, "List not found.");
+							result = false;
 						}
-					} catch (Exception e) {
-						utils.SElog(3, "Couldn't change value!");
-						result = false;				
 					}
-				} else {
-					utils.SEmessage(sender, "List not found.");
-					result = false;
 				}
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");

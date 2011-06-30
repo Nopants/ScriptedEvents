@@ -460,7 +460,6 @@ public class SEdataManager {
 			Map<Integer,String> stringTriggers = readTriggerFile();
 			for (int i=1;i<=stringTriggers.size();i++) {
 				triggerList.put(i, utils.stringToTrigger(stringTriggers.get(i)));
-//				if (triggerList.get(i))
 			}
 			
 		} catch (Exception ex) {

@@ -22,6 +22,7 @@ public class SEentitySet {
 	public String name = null;
 	public PlayerInteractEvent interactEvent = null;
 	public String[] args = null;
+	public String item = null; 
 		
  	public boolean isEmpty() {
 		return ((triggerEvent == SEtrigger.triggerEvent.none)
@@ -37,7 +38,8 @@ public class SEentitySet {
 				&&(script == null)
 				&&(condition == null)
 				&&(name == null)
-				&&(args == null));
+				&&(args == null)
+				&&(item == null));
 	}
 	 	
 	public SEentitySet(String newName, SEtrigger.triggerEvent newEvent, SEcuboid newCuboid, SEcondition newCondition, SEscript newScript, String newCommand) {

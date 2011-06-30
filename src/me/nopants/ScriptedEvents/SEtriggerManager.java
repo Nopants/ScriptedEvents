@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import me.nopants.ScriptedEvents.SEcondition.logicalOperator;
@@ -33,7 +34,7 @@ public class SEtriggerManager {
 		
 		for (int i=1; i <= triggerList.size(); i++) {
 			entitySet.trigger = triggerList.get(i);
-			releaseTrigger(entitySet);	
+			releaseTrigger(entitySet);
 		}
 		
 	}
@@ -77,6 +78,7 @@ public class SEtriggerManager {
 		SEcuboid triggeringCuboid = entitySet.cuboid;
 		Player triggeringPlayer   = entitySet.player;
 		Location blockLocation = entitySet.location;
+		String item = entitySet.item;
 		Server server = null;
 		String worldName = "none";
 		
@@ -165,6 +167,11 @@ public class SEtriggerManager {
 			result = result.replaceAll("<blockLocation>", utils.locationToString(blockLocation));
 		}
 		
+		// resolve item
+		while (result.contains("<item>")&&(item!=null)) {
+			result = result.replaceAll("<item>", item);
+		}
+		
 		// resolve triggeringPlayer
 		while (result.contains("<triggeringPlayer>")&&(triggeringPlayer!=null)) {
 			result = result.replaceAll("<triggeringPlayer>", triggeringPlayer.getName());
@@ -240,6 +247,16 @@ public class SEtriggerManager {
 			World targetWorld = server.getWorld(tempWorldName);
 			while (result.contains("time(") && targetWorld != null) {
 				result = result.replace(temp, String.valueOf(targetWorld.getTime()));				
+			}	
+		}
+		
+		// resolve getSize(<set>)
+		if (result.contains("size(")) {
+			String temp = result.substring(result.indexOf("size("), result.indexOf(')', result.indexOf("size("))+1);
+			String tempSetName = temp.substring(temp.indexOf('(')+1, temp.indexOf(')'));
+			Set<String> tempSet = plugin.SEdata.getSetVarList().get(tempSetName);
+			while (result.contains("size(") && tempSet != null) {
+				result = result.replace(temp, String.valueOf(tempSet.size()));				
 			}	
 		}
 		
@@ -373,6 +390,36 @@ public class SEtriggerManager {
 					result = false;
 				}
 				
+			}
+			checked = true;
+		}
+		
+		
+		
+		// check inGroup(<world>,<player>,<group>)
+		if (condition.contains("inGroup(") && !checked) {	
+			condition = condition.substring(condition.indexOf('('));
+			condition = condition.substring(1, condition.length()-1);
+			String[] conditionStrings = condition.split(","); 
+			
+			//utils.SElog(1, conditionStrings[0] + conditionStrings[1] + conditionStrings[2]); // debug
+			
+			if (conditionStrings.length==3) {
+				result = plugin.commander.permissionHandler.inGroup(conditionStrings[0], conditionStrings[1], conditionStrings[2]);
+			}
+			checked = true;
+		}
+		
+		// check contains(<set>,<item>)
+		if (condition.contains("contains(") && !checked) {	
+			condition = condition.substring(condition.indexOf('('));
+			condition = condition.substring(1, condition.length()-1);
+			String[] conditionStrings = condition.split(",");
+			
+			if (conditionStrings.length==2) {
+				if (plugin.SEdata.getSetVarList().containsKey(conditionStrings[0])) {
+					result = plugin.SEdata.getSetVarList().get(conditionStrings[0]).contains(conditionStrings[1]);
+				}
 			}
 			checked = true;
 		}
@@ -621,6 +668,26 @@ public class SEtriggerManager {
 							}
 						}
 					}	
+				} catch (Exception e) {}
+				
+				action = "";
+			}
+			
+			// doForSetItems() // <setItem> must not be resolved before the iteration!
+			if (action.contains("doForSetItems(")) {
+				try {
+					String setName = action.substring(action.indexOf('(')+1, action.indexOf(')'));
+					Set<String> tempSet = plugin.SEdata.getSetVarList().get(setName);
+					action=action.substring(action.indexOf(')')+2);
+					
+					Iterator<String> lauf = tempSet.iterator();
+					
+					while (lauf.hasNext()) {
+						entitySet.item = lauf.next();
+						executeAction(action, entitySet);	
+					}
+					
+						
 				} catch (Exception e) {}
 				
 				action = "";
