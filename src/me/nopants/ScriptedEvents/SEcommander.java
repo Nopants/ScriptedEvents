@@ -1473,40 +1473,46 @@ public class SEcommander {
 				}
 				
 				// edit list
-				if (args.length == 3) {
-					if (tempSetVarList.containsKey(args[0])) {
-						//try {
-							Set<String> tempSetVar = tempSetVarList.get(args[0]);
-							
-							if ((args[1].equalsIgnoreCase("remove")) || (args[1].equalsIgnoreCase("add"))) {
+				
+				if (tempSetVarList.containsKey(args[0])) {
+					try {
+						Set<String> tempSetVar = tempSetVarList.get(args[0]);
+						if ((args[1].equalsIgnoreCase("remove")) || (args[1].equalsIgnoreCase("add")) || (args[1].equalsIgnoreCase("onlinePlayers"))) {
+							if (args.length == 3) {
 								if ((args[1].equalsIgnoreCase("remove")) && tempSetVar.contains(args[2])) {
 									tempSetVar.remove(args[2]);
 								}
 								if (args[1].equalsIgnoreCase("add")) {
 									tempSetVar.add(args[2]);
 								}
-								tempSetVarList.put(args[0], tempSetVar);
-								plugin.SEdata.setSetVarList(tempSetVarList);
-								plugin.SEdata.rewriteAllSetVarFiles();
-								//plugin.SEdata.refreshSetVarList();
-								
-								if (sender instanceof Player)
-									utils.SEmessage(sender, "Value changed!");
-								result = true;
-								utils.SElog(1, args[0]+": "+plugin.SEdata.getSetVarList().get(args[0]).toString()); // debug
 							}
+							if (args.length == 2) {
+								if (args[1].equalsIgnoreCase("onlinePlayers")) {
+									tempSetVar.clear();
+									Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
+									for (int i=0; i < plugin.getServer().getOnlinePlayers().length; i++) {
+										tempSetVar.add(onlinePlayers[i].getName());
+									}
+								}
+							}
+							tempSetVarList.put(args[0], tempSetVar);
+							plugin.SEdata.setSetVarList(tempSetVarList);
+							plugin.SEdata.rewriteAllSetVarFiles();
+							//plugin.SEdata.refreshSetVarList();
 							
-							
-						//} catch (Exception e) {
-						//	utils.SElog(3, "Couldn't change value!");
-						//	result = false;				
-						//}
-					} else {
-						utils.SEmessage(sender, "List not found.");
-						result = false;
+							if (sender instanceof Player)
+								utils.SEmessage(sender, "Value changed!");
+							result = true;
+							utils.SElog(1, args[0]+": "+plugin.SEdata.getSetVarList().get(args[0]).toString()); // debug
+						}
+					} catch (Exception e) {
+						utils.SElog(3, "Couldn't change value!");
+						result = false;				
 					}
+				} else {
+					utils.SEmessage(sender, "List not found.");
+					result = false;
 				}
-				
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
 				result = false;
