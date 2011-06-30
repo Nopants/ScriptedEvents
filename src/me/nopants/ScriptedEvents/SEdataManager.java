@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,7 +25,7 @@ public class SEdataManager {
 	static String conditionDirectory = mainDirectory+"/conditions";
 	static String scriptDirectory = mainDirectory+"/scripts";
 	static String variableDirectory = mainDirectory+"/variables";
-	static String listDirectory = variableDirectory + "/lists";
+	static String setDirectory = variableDirectory + "/sets";
 	static File configFile = new File(mainDirectory + File.separator + "config.yml");
 	static File cuboidFile = new File(mainDirectory + File.separator + "cuboid.dat");
 	static File triggerFile = new File(mainDirectory + File.separator + "trigger.dat");
@@ -39,7 +40,7 @@ public class SEdataManager {
 	private Map<Integer, SEscript> scriptList = new HashMap<Integer, SEscript>();
 	private Map<String, String> stringVarList = new HashMap<String, String>();
 	private Map<String, Integer> intVarList = new HashMap<String, Integer>();
-	private Map<String,Map<Integer,String>> listVarList =  new HashMap<String, Map<Integer,String>>();
+	private Map<String,Set<String>> setVarList =  new HashMap<String, Set<String>>();
 	private Map<Player, Boolean> debugees = new HashMap<Player, Boolean>();
 	private int TriggerItem = 0;
 	private static int operatorLine = 1;
@@ -56,7 +57,7 @@ public class SEdataManager {
 		new File(conditionDirectory).mkdir();
 		new File(scriptDirectory).mkdir();
 		new File(variableDirectory).mkdir();
-		new File(listDirectory).mkdir();
+		new File(setDirectory).mkdir();
 		if (!configFile.exists()) {
 			try {
 				configFile.createNewFile();
@@ -92,8 +93,8 @@ public class SEdataManager {
 		refreshTriggerList();
 		refreshStringVarList();
 		refreshIntVarList();
-		refreshListVarList();
-		int variableCount = getStringVarList().size() + getIntVarList().size() + getListVarList().size();
+		refreshSetVarList();
+		int variableCount = getStringVarList().size() + getIntVarList().size() + getSetVarList().size();
 		
 		String refreshMessage = "ScriptedEvents: ";
 		refreshMessage = refreshMessage + getCuboidList().size() + " Cuboids, ";
@@ -175,9 +176,9 @@ public class SEdataManager {
 	// GET Lists
 	//---------------------//
 
-	// returns the listVarList
-	public Map<String,Map<Integer,String>> getListVarList() {
-		return this.listVarList;
+	// returns the setVarList
+	public Map<String,Set<String>> getSetVarList() {
+		return this.setVarList;
 	}
 	
 	// returns the intVarList
@@ -246,8 +247,8 @@ public class SEdataManager {
 	}
 
 	// sets the listVarList
-	public void setListVarList(Map<String,Map<Integer,String>> newListVarList) {
-		this.listVarList = newListVarList;
+	public void setSetVarList(Map<String,Set<String>> newSetVarList) {
+		this.setVarList = newSetVarList;
 	}
 	
 	// sets the stringVarList
@@ -365,25 +366,6 @@ public class SEdataManager {
 		}	
 		
 		this.scriptList = newScriptList;
-	}
-
-	// rewrites the IDs of scriptList
-	public void removeNullLists(String listName) {
-		Map<Integer, String> tempListVar = listVarList.get(listName);
-		Map<Integer, String> newListVar = new HashMap<Integer, String>();
-		int y = 1;
-		newListVar.clear();
-		
-		// rewrite HERE!
-		for (int i=1; i <= tempListVar.size()+1; i++) {
-			if (tempListVar.get(i)!=null) {
-				newListVar.put(y, tempListVar.get(i));
-				y++;
-			}
-			
-		}	
-		
-		this.listVarList.put(listName, newListVar);
 	}
 	
 	// increments the IDs of triggerList
@@ -504,17 +486,18 @@ public class SEdataManager {
 	}
  	
  	// does a refresh on the list of cuboids
- 	public void refreshListVarList() {
+ 	public void refreshSetVarList() {
      	// get all files in scriptDirectory which end on .script
-		File dir = new File(listDirectory);
-		File[] listFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".dat" );} } );
+		File dir = new File(setDirectory);
+		File[] setFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".dat" );} } );
 		
-		// loop over all .script-files
-		for(int i = 0; i < listFileList.length; i++) {
+		// loop over all .dat-files
+		for(int i = 0; i < setFileList.length; i++) {
 			// save the script into scriptList
-			String tempName = listFileList[i].getName();
+			String tempName = setFileList[i].getName();
 			tempName = tempName.substring(0, tempName.indexOf(".dat"));
-			listVarList.put(tempName, read(listFileList[i])) ;
+			
+			setVarList.put(tempName, utils.mapToSet(read(setFileList[i])));
 		}
 	}
  	
@@ -644,13 +627,12 @@ public class SEdataManager {
 	}
 	
 	// rewrites the files of all loaded List-Variables
-	public void rewriteAllListVarFiles() {
+	public void rewriteAllSetVarFiles() {
 		
- 		Iterator<String> lauf = listVarList.keySet().iterator();
+ 		Iterator<String> lauf = setVarList.keySet().iterator();
  		while (lauf.hasNext()) {
  			String listName = lauf.next();
- 			//removeNullLists(listName);
- 			rewriteListVarFile(listName);
+ 			rewriteSetVarFile(listName);
  			
  			/*
  			Map<Integer, String> tempList = listVarList.get(listName);
@@ -759,45 +741,23 @@ public class SEdataManager {
 		}
 	}
 	
-	public void rewriteListVarFile(String listName) {
-		Map<Integer,String> tempListVar = this.listVarList.get(listName);
+	// writes a SetVarFile into a .dat-file
+	public void rewriteSetVarFile(String setName) {
+		Set<String> tempSetVar = this.setVarList.get(setName);
+		File tempSetFile = new File(SEdataManager.setDirectory + File.separator + setName + ".dat");
 		
-		if (tempListVar!=null) {
-			File tempListFile = new File(listDirectory+ File.separator + listName + ".dat");
-			
-			write(tempListFile, "bla");
-			//bwriter.newLine();
-			write(tempListFile, "naaa");
+		try {
+			tempSetFile.delete();
+			tempSetFile.createNewFile();
+		} catch (IOException e) {
+			utils.SElog(3, "Couldn't rewrite "+setName+".dat!");
+		}				
+		
+		Iterator<String> lauf = tempSetVar.iterator();
+		
+		while (lauf.hasNext()) {
+			write(tempSetFile, lauf.next());
 		}
-			
-			/*
-			try {
-				tempListFile.delete();
-				tempListFile.createNewFile();
-			} catch (IOException e) {
-				utils.SElog(3, "Couldn't rewrite "+listName+".dat!");
-			}				
-				
-			utils.SElog(1, "values "+listName+": "+tempListVar.values().toString());
-			utils.SElog(1, "  keys "+listName+": "+tempListVar.keySet().toString());
-			
-			
-			Iterator<String> lauf = tempListVar.values().iterator();
-			
-			while (lauf.hasNext()) {
-				write(tempListFile, lauf.next());
-			}
-			
-			
-			for (int i = 0; i < tempListVar.size()+1; i++) {
-				if (tempListVar.get(i)!=null) {
-					utils.SElog(1, "write:"+tempListVar.get(i));
-					write(tempListFile, tempListVar.get(i));
-				}
-			}	
-			
-		}
-	    */
 	}
 	
 	// writes the stringVarList into the strings-file
@@ -861,8 +821,8 @@ public class SEdataManager {
 	// writes root with the value x into a File
 	public void write(File file, String x) {
 		try {
-			Writer out = new OutputStreamWriter(new FileOutputStream(file));
-		    out.write(x);
+			Writer out = new OutputStreamWriter(new FileOutputStream(file,true));
+		    out.write(x+System.getProperty("line.separator"));
 		    out.close();	
 		} catch (Exception e) {
 			utils.SElog(3, "Could not write to '"+file.getName()+"'!");
@@ -901,8 +861,12 @@ public class SEdataManager {
 		    int i = 1;
 		    try {
 		    	while (scanner.hasNextLine()){
-		    		result.put(i, scanner.nextLine());
-		    		i++;
+		    		String temp = scanner.nextLine();
+		    		//utils.SElog(1, temp);
+		    		if (!(temp==null || temp.equals(System.getProperty("line.separator")))) {
+		    			result.put(i, temp);
+		    			i++;
+		    		}
 		    	}
 		    	return result;
 		    } finally {

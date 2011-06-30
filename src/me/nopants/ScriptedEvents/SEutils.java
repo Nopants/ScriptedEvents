@@ -1,5 +1,8 @@
 package me.nopants.ScriptedEvents;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.script.ScriptEngineManager;
@@ -300,5 +303,12 @@ public class SEutils {
 	// returns a text-version of a location
 	public String locationToString(Location location){
 		return (location.getBlockX()+";"+location.getBlockY()+";"+location.getBlockZ());
+	}
+
+	
+	public Set<String> mapToSet(Map<Integer, String> map) {
+		Set<String> result = new HashSet<String>();
+		result.addAll(map.values());
+		return result;
 	}
 }

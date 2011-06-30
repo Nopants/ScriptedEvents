@@ -2,7 +2,9 @@ package me.nopants.ScriptedEvents;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import me.nopants.ScriptedEvents.SEcondition.logicalOperator;
 
@@ -1252,14 +1254,14 @@ public class SEcommander {
 		
 		Player player = senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+createNode)){
-			if (args.length > 1) {
+			if (args.length == 2 || args.length == 3) {
 				
 				if ((args[0].equalsIgnoreCase("int")||args[0].equalsIgnoreCase("string")||args[0].equalsIgnoreCase("list"))) {
 
 					if (args.length == 3) {
 						// String Variable
 						if (args[0].equalsIgnoreCase("string")) {
-							if (!plugin.SEdata.getStringVarList().containsKey(args[1])&&!plugin.SEdata.getIntVarList().containsKey(args[1])) {
+							if (!plugin.SEdata.variableExists(args[1])) {
 								
 								Map<String,String> tempList = plugin.SEdata.getStringVarList();
 								String value = plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
@@ -1293,7 +1295,7 @@ public class SEcommander {
 							}
 									
 							if (intArgs) {
-								if (!plugin.SEdata.getStringVarList().containsKey(args[1])&&!plugin.SEdata.getIntVarList().containsKey(args[1])) {
+								if (!plugin.SEdata.variableExists(args[1])) {
 									
 									Map<String,Integer> tempList = plugin.SEdata.getIntVarList();
 									tempList.put(args[1], value);
@@ -1313,9 +1315,6 @@ public class SEcommander {
 								result = false;
 							}
 						} 
-					} else {
-						utils.SEmessage(sender, "Wrong number of arguments! Try again.");
-						result = false;
 					}
 					
 					if (args.length == 2) {
@@ -1323,13 +1322,16 @@ public class SEcommander {
 						if (args[0].equalsIgnoreCase("list")) {
 							if (!plugin.SEdata.variableExists(args[1])) {
 								
-								Map<String,Map<Integer,String>> tempList = plugin.SEdata.getListVarList();
+								Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 								
-								tempList.put(args[1], new HashMap<Integer,String>());
+								tempSetVarList.put(args[1], new HashSet<String>());
 								
-								plugin.SEdata.setListVarList(tempList);
-								plugin.SEdata.rewriteListVarFile(args[1]);
-								plugin.SEdata.refreshListVarList();
+								plugin.SEdata.setSetVarList(tempSetVarList);
+								
+								utils.SElog(1, plugin.SEdata.getSetVarList().get(args[1]).toString()); // debug
+								
+								plugin.SEdata.rewriteSetVarFile(args[1]);
+								//plugin.SEdata.refreshSetVarList();
 								plugin.SEdata.utils.SEmessage(sender, "Variable '"+args[1]+"' created!");
 								result = true;
 																		
@@ -1339,9 +1341,6 @@ public class SEcommander {
 								result = false;
 							}
 						}	
-					} else {
-						utils.SEmessage(sender, "Variable-type has to be 'int', 'string' or 'list'!");
-						result = false;
 					}
 				} else {
 					utils.SEmessage(sender, "Variable-type has to be 'int', 'string' or 'list'!");
@@ -1409,7 +1408,7 @@ public class SEcommander {
 		boolean result = false;
 		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,Integer> tempIntVarList = plugin.SEdata.getIntVarList();
-		Map<String,Map<Integer,String>> tempListVarList = plugin.SEdata.getListVarList();
+		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
 		Player player = senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+editNode)){
@@ -1475,27 +1474,26 @@ public class SEcommander {
 				
 				// edit list
 				if (args.length == 3) {
-					if (tempListVarList.containsKey(args[0])) {
+					if (tempSetVarList.containsKey(args[0])) {
 						//try {
-							Map<Integer,String> tempListVar = tempListVarList.get(args[0]);
+							Set<String> tempSetVar = tempSetVarList.get(args[0]);
 							
 							if ((args[1].equalsIgnoreCase("remove")) || (args[1].equalsIgnoreCase("add"))) {
-								if ((args[1].equalsIgnoreCase("remove")) && tempListVar.containsValue(args[2])) {
-									tempListVar.remove(args[2]);
-									plugin.SEdata.removeNullLists(args[0]);
+								if ((args[1].equalsIgnoreCase("remove")) && tempSetVar.contains(args[2])) {
+									tempSetVar.remove(args[2]);
 								}
 								if (args[1].equalsIgnoreCase("add")) {
-									tempListVar.put(tempListVar.size(), args[2]);
+									tempSetVar.add(args[2]);
 								}
-								tempListVarList.put(args[0], tempListVar);
-								plugin.SEdata.setListVarList(tempListVarList);
-								plugin.SEdata.rewriteAllListVarFiles();
-								//plugin.SEdata.refreshListVarList();
+								tempSetVarList.put(args[0], tempSetVar);
+								plugin.SEdata.setSetVarList(tempSetVarList);
+								plugin.SEdata.rewriteAllSetVarFiles();
+								//plugin.SEdata.refreshSetVarList();
 								
 								if (sender instanceof Player)
 									utils.SEmessage(sender, "Value changed!");
 								result = true;
-								utils.SElog(1, args[0]+": "+plugin.SEdata.getListVarList().get(args[0]).values().toString());
+								utils.SElog(1, args[0]+": "+plugin.SEdata.getSetVarList().get(args[0]).toString()); // debug
 							}
 							
 							
