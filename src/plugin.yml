@@ -1,0 +1,129 @@
+name: ScriptedEvents
+main: me.nopants.ScriptedEvents.ScriptedEvents
+version: 1.5
+author: Nopants
+commands:
+    SE.debug:
+        aliases: [SE.d]
+        description: Turn on debug Information
+        usage: /<command>
+    SE.help:
+        aliases: [SE.h]
+        description: Show help for ScriptedEvents
+        usage: /<command> <page>
+    SE.refresh:
+        aliases: [SE.r]
+        description: Reloads the plugin-data
+        usage: /<command>
+    SE.edit.add:
+        aliases: [SE.e.a]
+        description: Adds an action/condition to a script/condition-file
+        usage: /<command> <action>
+    SE.edit.delete:
+        aliases: [SE.e.d]
+        description: Deletes an action/condition out of a script/condition-file
+        usage: /<command> <action-id>
+    SE.edit.name:
+        aliases: [SE.e.n]
+        description: Changes the name of the edited entity
+        usage: /<command> <name>
+    SE.edit.event:
+        aliases: [SE.e.e]
+        description: Changes the event of the edited trigger
+        usage: /<command> <trigger-event>
+    SE.edit.entity:
+        aliases: [SE.e.ent]
+        description: Changes the trigger-entity of the edited trigger
+        usage: /<command> <trigger-entity>
+    SE.edit.script:
+        aliases: [SE.e.scr]
+        description: Changes the script of the edited trigger
+        usage: /<command> <script-id>
+    SE.edit.condition:
+        aliases: [SE.e.co]
+        description: Changes the condition of the edited trigger
+        usage: /<command> <condition-id>
+    SE.edit.close:
+        aliases: [SE.e.cl]
+        description: Closes the Edit-Mode
+        usage: /<command>
+    SE.edit.save:
+        aliases: [SE.e.s]
+        description: Saves the currently edited entity
+        usage: /<command>
+    SE.cuboid.create:
+        aliases: [SE.cu.c]
+        description: Save a selected cuboid
+        usage: /<command> <cuboid name>
+    SE.cuboid.delete:
+        aliases: [SE.cu.d]
+        description: Delete a cuboid by its ID
+        usage: /<command> <cuboid ID>
+    SE.cuboid.edit:
+        aliases: [SE.cu.e]
+        description: Edit a cuboid
+        usage: /<command> <cuboid ID>
+    SE.cuboid.getID:
+        aliases: [SE.cu.id]
+        description: Shows a cuboids ID
+        usage: /<command> <cuboid name>
+    SE.trigger.create:
+        aliases: [SE.t.c]
+        description: Creates a new trigger
+        usage: /<command> <trigger name>
+    SE.trigger.delete:
+        aliases: [SE.t.d]
+        description: Delete a trigger by its ID
+        usage: /<command> <trigger ID>
+    SE.trigger.edit:
+        aliases: [SE.t.e]
+        description: Edit a trigger
+        usage: /<command> <trigger ID>
+    SE.trigger.getID:
+        aliases: [SE.t.id]
+        description: Shows a cuboids ID
+        usage: /<command> <trigger name>
+    SE.script.create:
+        aliases: [SE.s.c]
+        description: Creates a new script
+        usage: /<command> <script name>
+    SE.script.delete:
+        aliases: [SE.s.d]
+        description: Delete a script by its ID
+        usage: /<command> <script ID>
+    SE.script.edit:
+        aliases: [SE.s.e]
+        description: Edit a script
+        usage: /<command> <script ID>
+    SE.script.getID:
+        aliases: [SE.s.id]
+        description: Shows a scripts ID
+        usage: /<command> <script name>
+    SE.condition.create:
+        aliases: [SE.co.c]
+        description: Creates a new condition
+        usage: /<command> <condition name>
+    SE.condition.delete:
+        aliases: [SE.co.d]
+        description: Delete a condition by its ID
+        usage: /<command> <condition ID>
+    SE.condition.edit:
+        aliases: [SE.co.e]
+        description: Edit a condition
+        usage: /<command> <condition ID>
+    SE.condition.getID:
+        aliases: [SE.co.id]
+        description: Shows a conditions ID
+        usage: /<command> <condition name>
+    SE.variable.create:
+        aliases: [SE.v.c]
+        description: Creates a new variable
+        usage: /<command> <type> <name> <value>
+    SE.variable.delete:
+        aliases: [SE.v.d]
+        description: Delete a variable by its Name
+        usage: /<command> <variable-name>
+    SE.variable.edit:
+        aliases: [SE.v.e]
+        description: Change a variables value
+        usage: /<command> <variable-name> <new value>
