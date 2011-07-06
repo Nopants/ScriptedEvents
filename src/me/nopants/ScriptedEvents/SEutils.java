@@ -290,9 +290,9 @@ public class SEutils {
 	// returns the player named 'playerName', if he is online 
 	public Player stringToPlayer(Player[] onlinePlayers, String playerName) {
 		Player result = null;
-		//ScriptedEvents.writeInLog(1, "searched Player: "+playerName); // debug
+		//SElog(1,     "searched Player: "+playerName); // debug
 		for (int i = 0; i < onlinePlayers.length ; i++) {
-			//ScriptedEvents.writeInLog(1, "checked Player: "+onlinePlayers[i].getName()); // debug
+			//SElog(1, " checked Player: "+onlinePlayers[i].getName()); // debug
 			if (onlinePlayers[i].getName().equalsIgnoreCase(playerName)) {
 				result = onlinePlayers[i];
 			}
@@ -305,10 +305,45 @@ public class SEutils {
 		return (location.getBlockX()+";"+location.getBlockY()+";"+location.getBlockZ());
 	}
 
-	
 	public Set<String> mapToSet(Map<Integer, String> map) {
 		Set<String> result = new HashSet<String>();
 		result.addAll(map.values());
+		return result;
+	}
+
+	public int findBracket(String input, int pos) {
+		int result = -1; 
+		// BRACKET check
+		int x=0;
+		for (int i=pos; i<input.length();i++) {
+			if (input.charAt(i)=='(')
+				x++;
+			if (input.charAt(i)==')')
+				x--;
+			if (x==0) {
+				result = i;
+				//utils.SElog(1, "jeah: "+i); // debug
+				i = input.length();
+			}
+		}
+		return result;
+	}
+	
+	public int findAngleBracket(String input, int pos) {
+		int result = -1; 
+		// BRACKET check
+		int x=0;
+		for (int i=pos; i<input.length();i++) {
+			if (input.charAt(i)=='<')
+				x++;
+			if (input.charAt(i)=='>')
+				x--;
+			if (x==0) {
+				result = i;
+				//utils.SElog(1, "jeah: "+i); // debug
+				i = input.length();
+			}
+		}
 		return result;
 	}
 }

@@ -694,8 +694,8 @@ public class SEdataManager {
 			write(newScriptFile, "ID", String.valueOf(script.getID()));
 			*/
 			// write every Action
-			for (int i = 1; i <= script.getAcionList().size(); i++) {
-				write(newScriptFile, script.getAcionList().get(i));
+			for (int i = 1; i <= script.getActionList().size(); i++) {
+				write(newScriptFile, script.getActionList().get(i));
 			}
 		} catch (IOException e) {
 			utils.SElog(3, "Couldn't rewrite "+script.getName()+".script!");

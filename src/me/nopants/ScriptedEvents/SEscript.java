@@ -35,7 +35,7 @@ public class SEscript {
 		return this.scriptFile;
 	} 
 	
-	public Map<Integer, String> getAcionList() {
+	public Map<Integer, String> getActionList() {
 		return this.actionList;
 	}
 }

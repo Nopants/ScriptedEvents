@@ -29,6 +29,7 @@ public class SEcommander {
 	private static String scriptNode = ".script";
 	private static String conditionNode = ".condition";
 	private static String variableNode = ".variable";
+	private static String listNode = ".list";
 	private static String createNode = ".variable";
 	private static String deleteNode = ".variable";
 	private static String getIDNode = ".getid";
@@ -181,7 +182,7 @@ public class SEcommander {
 					
 					// add script
 					if (editEntity.script != null) {
-						Map<Integer, String> actionList = editEntity.script.getAcionList();
+						Map<Integer, String> actionList = editEntity.script.getActionList();
 						
 						// change script
 						String newAction = "";
@@ -249,7 +250,7 @@ public class SEcommander {
 					
 					// delete script
 					if (editEntity.script != null) {
-						Map<Integer, String> actionList = editEntity.script.getAcionList();
+						Map<Integer, String> actionList = editEntity.script.getActionList();
 						Map<Integer, String> newActionList = new HashMap<Integer, String>();
 							
 						if (intArgs||(args.length==0)) {
@@ -1264,7 +1265,7 @@ public class SEcommander {
 							if (!plugin.SEdata.variableExists(args[1])) {
 								
 								Map<String,String> tempList = plugin.SEdata.getStringVarList();
-								String value = plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
+								String value = args[2]; // plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 								
 								tempList.put(args[1], value);
 								plugin.SEdata.setStringVarList(tempList);
@@ -1282,7 +1283,7 @@ public class SEcommander {
 
 						// Integer Variable
 						if (args[0].equalsIgnoreCase("int")) {	
-							String stringValue = plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
+							String stringValue = args[2]; // plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 							int value = 0;
 							boolean intArgs = false;
 							
@@ -1360,24 +1361,26 @@ public class SEcommander {
 		boolean result = false;
 		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,Integer> tempIntVarList = plugin.SEdata.getIntVarList();
+		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
 		Player player = senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+deleteNode)){
-			if (tempStringVarList.containsKey(args[0])) {
-				try {
-					tempStringVarList.remove(args[0]);
-					plugin.SEdata.setStringVarList(tempStringVarList);
-					plugin.SEdata.rewriteStringVarFile();
-					plugin.SEdata.refreshStringVarList();
-					
-					utils.SEmessage(sender, "Variable deleted!");
-					result = true;
+			if (tempIntVarList.containsKey(args[0]) || tempStringVarList.containsKey(args[0]) || tempSetVarList.containsKey(args[0])) {
+				if (tempStringVarList.containsKey(args[0])) {
+					try {
+						tempStringVarList.remove(args[0]);
+						plugin.SEdata.setStringVarList(tempStringVarList);
+						plugin.SEdata.rewriteStringVarFile();
+						plugin.SEdata.refreshStringVarList();
+						
+						utils.SEmessage(sender, "Variable deleted!");
+						result = true;
+					}
+					catch (Exception e){
+						utils.SElog(3, "Couldn't delete Variable!");
+						result = false;				
+					}
 				}
-				catch (Exception e){
-					utils.SElog(3, "Couldn't delete Variable!");
-					result = false;				
-				}
-			} else {
 				if (tempIntVarList.containsKey(args[0])) {
 					try {
 						tempIntVarList.remove(args[0]);
@@ -1392,12 +1395,28 @@ public class SEcommander {
 						utils.SElog(3, "Couldn't delete Variable!");
 						result = false;				
 					}	
-				} else {
-					utils.SEmessage(sender, "No such Variable!");
-					result = false;
+				}	
+				if (tempSetVarList.containsKey(args[0])) {
+					try {
+						tempSetVarList.remove(args[0]);
+						plugin.SEdata.setSetVarList(tempSetVarList);
+						File tempSetFile = new File(SEdataManager.setDirectory + File.separator + args[0] + ".dat");
+						tempSetFile.delete();
+						plugin.SEdata.refreshSetVarList();
+						
+						utils.SEmessage(sender, "Variable deleted!");
+						result = true;
+					}
+					catch (Exception e){
+						utils.SElog(3, "Couldn't delete Variable!");
+						result = false;				
+					}	
 				}
+			} else {
+				utils.SEmessage(sender, "No such Variable!");
+				result = false;
 			}
-		} else result = true;
+		}
 			
 		
 		return result;
@@ -1438,7 +1457,7 @@ public class SEcommander {
 					if (args[0].equalsIgnoreCase("int")) {
 						if (tempIntVarList.containsKey(args[1])) {
 							
-							String stringValue = plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
+							String stringValue = args[2]; // plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 							int value = 0;
 							boolean intArgs = false;
 							
@@ -1527,6 +1546,36 @@ public class SEcommander {
 						}
 					}
 				}
+			} else {
+				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
+				result = false;
+			}	
+		} else result = true;
+		
+		return result;
+	}
+
+	// se.variable.edit
+	public boolean variableList(CommandSender sender, String[] args) {
+		boolean result = false;
+		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
+		Map<String,Integer> tempIntVarList = plugin.SEdata.getIntVarList();
+		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
+		
+		Player player = senderToPlayer(sender);
+		if(checkPermission(player, seNode+variableNode+listNode)){
+			if (args.length == 1) {
+			
+				if (args[0].equalsIgnoreCase("int")) {
+					player.sendMessage(tempIntVarList.keySet().toString());
+				}
+				if (args[0].equalsIgnoreCase("string")) {
+					player.sendMessage(tempStringVarList.keySet().toString());
+				}
+				if (args[0].equalsIgnoreCase("set")) {
+					player.sendMessage(tempSetVarList.keySet().toString());
+				}
+				
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
 				result = false;

@@ -1,8 +1,9 @@
 package me.nopants.ScriptedEvents;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+/*
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -17,27 +18,22 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
+*/
 
 public class SEtriggerManager {
 	private SEdataManager SEdata;
-	private SEutils utils;
+	//private SEutils utils;
 	private ScriptedEvents plugin;
+	
 	
 	public SEtriggerManager(ScriptedEvents scriptedEvents) {
 		plugin = scriptedEvents;
 		SEdata = plugin.SEdata;
-		utils = plugin.SEdata.utils;
-	}
-
-	// releases a list of triggers
-	public void releaseTriggerList(Map<Integer, SEtrigger> triggerList, SEentitySet entitySet) {
-		
-		for (int i=1; i <= triggerList.size(); i++) {
-			entitySet.trigger = triggerList.get(i);
-			releaseTrigger(entitySet);
-		}
+		//utils = plugin.SEdata.utils;
 		
 	}
+	
+	/*
 	
 	// releases a Trigger
 	public void releaseTrigger(SEentitySet entitySet) {
@@ -555,16 +551,16 @@ public class SEtriggerManager {
 			targetPlayer = utils.stringToPlayer(onlinePlayers, input[0]);
 			Effect effect = Effect.valueOf(input[1]);
 			
-			/*
-			Effect.BOW_FIRE
-			Effect.CLICK1
-			Effect.CLICK2
-			Effect.DOOR_TOGGLE
-			Effect.EXTINGUISH
-			Effect.RECORD_PLAY
-			Effect.SMOKE
-			Effect.STEP_SOUND
-			*/
+			
+			//Effect.BOW_FIRE
+			//Effect.CLICK1
+			//Effect.CLICK2
+			//Effect.DOOR_TOGGLE
+			//Effect.EXTINGUISH
+			//Effect.RECORD_PLAY
+			//Effect.SMOKE
+			//Effect.STEP_SOUND
+			
 			
 			targetPlayer.playEffect(targetPlayer.getLocation(), effect, 0);
 			
@@ -821,6 +817,8 @@ public class SEtriggerManager {
 		}
 		return null;
 	}
+	
+	*/
 	
 	// returns the triggers matching to the event and entities
 	public Map<Integer, SEtrigger> getRelevantTriggers(SEentitySet entitySet) {		

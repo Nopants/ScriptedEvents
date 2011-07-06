@@ -43,19 +43,19 @@ public class SEplayerListener extends PlayerListener {
 	// Functions
 	// ----------//
 	
+	// releases a list of triggers
+	public void releaseTriggerList(Map<Integer, SEtrigger> triggerList, SEentitySet entitySet) {
+		for (int i=1; i <= triggerList.size(); i++) {
+			SEinterpreter interpreter = new SEinterpreter(plugin, triggerList.get(i), entitySet);
+			interpreter.start();
+		}
+		
+	}
+
+	// resets the distance a player has to walk until the next check
 	public void resetDist(Player player) {
 		distLeft.put(player, 0);
 	}
-	
-	/*
-	public Map<Player,Integer> getDistLeft() {
-		return this.distLeft;
-	}
-	
-	public void setDistLeft(Map<Player,Integer> newDistLeft) {
-		this.distLeft = newDistLeft;
-	}
-	*/
 	
 	// returns the nearest cuboid to a location
 	private SEcuboid getNextCuboid(Location playerLocation) {
@@ -131,7 +131,7 @@ public class SEplayerListener extends PlayerListener {
 		// get the triggers matching to the entered Cuboid and the event onEnter
 		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onLeave, leftCuboid));
 		// release the triggers
-		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(leavingPlayer, leftCuboid));
+		releaseTriggerList(triggerList, new SEentitySet(leavingPlayer, leftCuboid));
 		//----------------------------------------------------------------------------//
 		
 		if (SEdata.getDebugees(leavingPlayer)) utils.SEmessage(leavingPlayer, leavingPlayer.getName() + " left '"
@@ -146,7 +146,7 @@ public class SEplayerListener extends PlayerListener {
 		// get the triggers matching to the entered Cuboid and the event onEnter
 		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onEnter, enteredCuboid));
 		// release the triggers
-		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(enteringPlayer, enteredCuboid));
+		releaseTriggerList(triggerList, new SEentitySet(enteringPlayer, enteredCuboid));
 		//----------------------------------------------------------------------------//
 		
 		if (SEdata.getDebugees(enteringPlayer)) utils.SEmessage(enteringPlayer, enteringPlayer.getName() + " entered '"
@@ -309,8 +309,7 @@ public class SEplayerListener extends PlayerListener {
 		// get the triggers matching to the entered Cuboid and the event onEnter
 		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onInteract));
 		// release the triggers
-		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
-		
+		releaseTriggerList(triggerList, new SEentitySet(event));		
 		event.setCancelled(cancel);
 		cancel = false;
 		//----------------------------------------------------------------------------//
@@ -365,7 +364,7 @@ public class SEplayerListener extends PlayerListener {
 		
 		if (!triggerList.isEmpty()) {
 			// release the triggers matching to the entered Cuboid and the event onInteractAt
-			plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(player, commandLabel, args));
+			releaseTriggerList(triggerList, new SEentitySet(player, commandLabel, args));
 			event.setCancelled(true);
 		}
 		//----------------------------------------------------------------------------//			

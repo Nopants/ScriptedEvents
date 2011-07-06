@@ -122,8 +122,12 @@ commands:
     SE.variable.delete:
         aliases: [SE.v.d]
         description: Delete a variable by its Name
-        usage: /<command> <variable-name>
+        usage: /<command> <name>
     SE.variable.edit:
         aliases: [SE.v.e]
         description: Change a variables value
-        usage: /<command> <variable-name> <new value>
+        usage: /<command> <type> <name> <value>
+    SE.variable.list:
+        aliases: [SE.v.l]
+        description: Lists all variables of one type
+        usage: /<command> <type>

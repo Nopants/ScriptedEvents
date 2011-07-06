@@ -263,6 +263,9 @@ public class ScriptedEvents extends JavaPlugin {
 							if ((commandParts[2].equalsIgnoreCase("edit"))||(commandParts[2].equalsIgnoreCase("e")))
 								result = commander.variableEdit(sender, args);
 							
+							// /SE.variable.list
+							if ((commandParts[2].equalsIgnoreCase("list"))||(commandParts[2].equalsIgnoreCase("l")))
+								result = commander.variableList(sender, args);
 							
 							//
 							// -------------------------------------------------------------------//
