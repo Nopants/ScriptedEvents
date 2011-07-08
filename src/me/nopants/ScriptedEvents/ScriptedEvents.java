@@ -20,14 +20,18 @@ public class ScriptedEvents extends JavaPlugin {
 	public PermissionHandler permissionHandler;
 	public boolean hasPermissions = false;
 	public SEcommander commander;
+	PluginDescriptionFile pdfFile;
+	String version;
 	
 	//private Map<CommandSender, SEtrigger> editTrigger = new HashMap<CommandSender, SEtrigger>();
 	//private Map<CommandSender, Integer> editStep = new HashMap<CommandSender, Integer>();
 	
-	String version = "1.5.3";
+	
 
 	// the main function called onEnable Plugin 
 	public void onEnable() {
+		pdfFile = this.getDescription();
+		version = pdfFile.getVersion();
 		SEdata = new SEdataManager();
 		utils = SEdata.utils;
 		utils.writeinlog(1, "ScriptedEvents: "+version+" enabled");
@@ -284,8 +288,8 @@ public class ScriptedEvents extends JavaPlugin {
 	      
 	      if (this.permissionHandler == null) {
 	          if (permissionsPlugin != null) {
-	        	  PluginDescriptionFile pdfFile = permissionsPlugin.getDescription();
-	    	      String permissionsVersion = pdfFile.getVersion();
+	        	  PluginDescriptionFile permissionsDescription = permissionsPlugin.getDescription();
+	    	      String permissionsVersion = permissionsDescription.getVersion();
 	              this.permissionHandler = ((Permissions) permissionsPlugin).getHandler();
 	              hasPermissions = true;
 	              utils.writeinlog(1, "ScriptedEvents: "+"v" + permissionsVersion +" - Permissions support enabled");

@@ -46,7 +46,7 @@ public class SEplayerListener extends PlayerListener {
 	// releases a list of triggers
 	public void releaseTriggerList(Map<Integer, SEtrigger> triggerList, SEentitySet entitySet) {
 		for (int i=1; i <= triggerList.size(); i++) {
-			SEinterpreter interpreter = new SEinterpreter(plugin, triggerList.get(i), entitySet);
+			SEinterpreter interpreter = new SEinterpreter(plugin, triggerList.get(i), entitySet, SEinterpreter.kindType.script);
 			interpreter.start();
 		}
 		

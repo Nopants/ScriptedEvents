@@ -35,16 +35,17 @@ public class SEutils {
 	*/
 
 	// returns an ItemStack if the player has a the item with the itemID
-	public ItemStack searchItem(Player player, int itemID) {
+	public ItemStack searchItem(Player player, int itemID, int amount) {
 		ItemStack tempItem = null;
 		if (player != null) {
-			ItemStack[] content = player.getInventory().getContents();
 			
-			if ((player.getItemInHand()!=null) && (player.getItemInHand().getTypeId() == itemID)) {
+			if ((player.getItemInHand()!=null) && (player.getItemInHand().getTypeId() == itemID) && (player.getItemInHand().getAmount() >= amount)) {
 				tempItem = player.getItemInHand();
 			} else {
-				for (int i=0;i<content.length;i++) {
-					if ((content[i]!=null) && (content[i].getTypeId() == itemID)) tempItem = content[i];
+				for (int i=39;i>=0;i--) {
+					//SElog(1, "i: "+i); // debug
+					if ((player.getInventory().getItem(i)!=null) && (player.getInventory().getItem(i).getTypeId() == itemID) && (player.getInventory().getItem(i).getAmount() >= amount))
+						tempItem = player.getInventory().getItem(i);
 				}	
 			}
 		}
