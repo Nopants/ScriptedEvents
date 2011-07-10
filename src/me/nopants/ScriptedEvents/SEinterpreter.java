@@ -13,6 +13,7 @@ import me.nopants.ScriptedEvents.SEcondition.logicalOperator;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -187,11 +188,17 @@ public class SEinterpreter extends Thread {
 	Set<String> preVariables = new HashSet<String>(Arrays.asList(
 			"<triggeringPlayer>",
 			"<triggeringCuboid>",
-			"<blockLocation>",
+			"<cuboidBlockLocation>",
 			"<clickedLocation>",
 			"<rightClick>",
 			"<randomInt>",
-			"<item>"
+			"<setItem>",
+			"<placedBlockID>",
+			"<placedBlockLocation>",
+			"<placedBlockData>",
+			"<brokenBlockID>",
+			"<brokenBlockLocation>",
+			"<brokenBlockData>"
 			));
 
 	@SuppressWarnings("serial")
@@ -610,13 +617,13 @@ public class SEinterpreter extends Thread {
 												if (entitySet.cuboid != null)
 													result = entitySet.cuboid.getName();
 											}
-											if (expression.equals("<blockLocation>")) {
+											if (expression.equals("<cuboidBlockLocation>")) {
 												if (entitySet.location != null)
 													result = utils.locationToString(entitySet.location);
 											}
-											if (expression.equals("<item>")) {
-												if (entitySet.item != null)
-													result = entitySet.item;
+											if (expression.equals("<setItem>")) {
+												if (entitySet.setItem != null)
+													result = entitySet.setItem;
 											}
 											// interact-related variables
 											if (entitySet.interactEvent != null) {
@@ -633,6 +640,40 @@ public class SEinterpreter extends Thread {
 												}
 												if (expression.equals("<rightClick>")) {
 													result = String.valueOf(rightClick);
+												}
+											}
+											// BlockPlace-related variables
+											if (entitySet.blockPlaceEvent != null) {
+												Block placedBlock = entitySet.blockPlaceEvent.getBlockPlaced();
+												String placedBlockLocation = utils.locationToString(placedBlock.getLocation());
+												String placedBlockID = String.valueOf(placedBlock.getTypeId());
+												String placedBlockData = String.valueOf(placedBlock.getData());
+												
+												if (expression.equals("<placedBlockID>")) {
+														result = placedBlockID;
+												}
+												if (expression.equals("<placedBlockData>")) {
+													result = placedBlockData;
+												}
+												if (expression.equals("<placedBlockLocation>")) {
+													result = placedBlockLocation;
+												}
+											}
+											// BlockBreak-related variables
+											if (entitySet.blockBreakEvent != null) {
+												Block breakBlock = entitySet.blockBreakEvent.getBlock();
+												String breakBlockLocation = utils.locationToString(breakBlock.getLocation());
+												String breakBlockID = String.valueOf(entitySet.typeID);
+												String breakBlockData = String.valueOf(entitySet.data);
+												
+												if (expression.equals("<brokenBlockID>")) {
+														result = breakBlockID;
+												}
+												if (expression.equals("<brokenBlockData>")) {
+													result = breakBlockData;
+												}
+												if (expression.equals("<brokenBlockLocation>")) {
+													result = breakBlockLocation;
 												}
 											}
 											
@@ -1218,7 +1259,7 @@ public class SEinterpreter extends Thread {
 			Iterator<String> lauf = tempSet.iterator();
 			
 			while (lauf.hasNext()) {
-				entitySet.item = lauf.next();
+				entitySet.setItem = lauf.next();
 				executeLine(action, actions);	
 			}
 		}

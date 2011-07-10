@@ -4,25 +4,38 @@ import me.nopants.ScriptedEvents.SEtrigger.triggerEvent;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 
 public class SEentitySet {
 	public SEtrigger.triggerEvent triggerEvent = SEtrigger.triggerEvent.none;
-	public Player player = null;
 	public SEtrigger trigger = null;
-	public SEcuboid cuboid = null;
-	public Location location = null;
-	public int itemID = 0;
+	public SEcondition condition = null;
+	public SEscript script = null;
+	
 	public int cycles = -1;
 	public int randomMax = 0;
 	public int randomMin = 0;
+	
+	int typeID = -1;
+	int data = -1;
+	
+	public Player player = null;
+	public SEcuboid cuboid = null;
+	public Location location = null;
+	
 	public String command = null;
-	public SEcondition condition = null;
-	public SEscript script = null;
-	public String name = null;
-	public PlayerInteractEvent interactEvent = null;
 	public String[] args = null;
-	public String item = null; 
+	
+	public String setItem = null;
+	public String name = null;
+	
+	public PlayerInteractEvent interactEvent = null;
+	public PlayerRespawnEvent respawnEvent = null;
+	public BlockBreakEvent blockBreakEvent = null;
+	public BlockPlaceEvent blockPlaceEvent = null;
 		
  	public boolean isEmpty() {
 		return ((triggerEvent == SEtrigger.triggerEvent.none)
@@ -30,7 +43,6 @@ public class SEentitySet {
 				&&(trigger == null)
 				&&(cuboid == null)
 				&&(location == null)
-				&&(itemID == 0)
 				&&(cycles == -1)
 				&&(randomMax == 0)
 				&&(randomMin == 0)
@@ -39,7 +51,7 @@ public class SEentitySet {
 				&&(condition == null)
 				&&(name == null)
 				&&(args == null)
-				&&(item == null));
+				&&(setItem == null));
 	}
 	 	
 	public SEentitySet(String newName, SEtrigger.triggerEvent newEvent, SEcuboid newCuboid, SEcondition newCondition, SEscript newScript, String newCommand) {
@@ -51,70 +63,77 @@ public class SEentitySet {
 		this.name = newName;
 	}
 	
-	public SEentitySet(SEtrigger newTrigger, Player newPlayer, int newItemID, SEcuboid newCuboid) {
-		this.player = newPlayer;
-		this.trigger = newTrigger;
-		this.cuboid = newCuboid;
-		this.itemID = newItemID;
+	public SEentitySet() {
+	}
+
+	public SEentitySet(SEtrigger.triggerEvent newEvent) {
+		this.triggerEvent = newEvent;
 	}
 	
+	public SEentitySet(SEtrigger newTrigger) {
+		this.trigger = newTrigger;
+	}
+	
+	//onInteract
+	public SEentitySet(PlayerInteractEvent newInteractEvent) {
+		this.interactEvent = newInteractEvent;
+		this.player = interactEvent.getPlayer();
+	}
+	
+	//onRespawn
+	public SEentitySet(PlayerRespawnEvent newRespawnEvent) {
+		this.respawnEvent = newRespawnEvent;
+		this.player = respawnEvent.getPlayer();
+	}
+	
+	//onBlockBreak
+	public SEentitySet(BlockBreakEvent newblockBreakEvent, int newTypeID, int newData) {
+		this.blockBreakEvent = newblockBreakEvent;
+		this.player = blockBreakEvent.getPlayer();
+		this.typeID = newTypeID;
+		this.data = newData;
+		this.location = blockBreakEvent.getBlock().getLocation();
+	}
+	
+	//onBlockPlace
+	public SEentitySet(BlockPlaceEvent newblockPlaceEvent) {
+		this.blockPlaceEvent = newblockPlaceEvent;
+		this.player = blockPlaceEvent.getPlayer();
+		this.location = blockPlaceEvent.getBlock().getLocation();
+	}
+	
+	//onEnter && onLeave
 	public SEentitySet(SEtrigger.triggerEvent newEvent, SEcuboid newCuboid) {
 		this.triggerEvent = newEvent;
 		this.cuboid = newCuboid;
 	}
-	
 	public SEentitySet(Player newPlayer, SEcuboid newCuboid) {
 		this.player = newPlayer;
 		this.cuboid = newCuboid;
 	}
 	
-	public SEentitySet(Player newPlayer, int newItemID,  SEcuboid newCuboid) {
-		this.player = newPlayer;
-		this.cuboid = newCuboid;
-		this.itemID = newItemID;
-	}
-	
-	public SEentitySet(SEtrigger.triggerEvent newEvent) {
-		this.triggerEvent = newEvent;
-	}
-	
-	public SEentitySet(Player newPlayer, int newItemID) {
-		this.player = newPlayer;
-		this.itemID = newItemID;
-	}
-	
+	//onCommand
 	public SEentitySet(triggerEvent newEvent, String newCommand) {
 		this.triggerEvent = newEvent;
 		this.command = newCommand;
 	}
-	
 	public SEentitySet(Player newPlayer, String newCommand, String[] newArgs) {
 		this.player = newPlayer;
 		this.command = newCommand;
 		this.args = newArgs;
 	}
-
-	public SEentitySet() {
-	}
-
-	public SEentitySet(SEtrigger newTrigger) {
-		this.trigger = newTrigger;
-	}
-
+	
+	//edit entities	
 	public SEentitySet(SEcuboid newCuboid) {
 		this.cuboid = newCuboid;
 	}
-	
 	public SEentitySet(SEscript newScript) {
 		this.script = newScript;
 	}
-	
 	public SEentitySet(SEcondition newCondition) {
 		this.condition = newCondition;
 	}
 
-	public SEentitySet(PlayerInteractEvent newInteractEvent) {
-		this.interactEvent = newInteractEvent;
-		this.player = interactEvent.getPlayer();
-	}
+
+	
 }

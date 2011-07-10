@@ -1,7 +1,7 @@
 package me.nopants.ScriptedEvents;
 
 public class SEtrigger {
-	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, none};
+	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, onBlockBreak, onBlockPlace, onRespawn, none};
 	triggerEvent event;
 	private String name;
 	private String triggerCommand;
@@ -47,7 +47,7 @@ public class SEtrigger {
 	// returns a text-version of this trigger
 	public String toString() {
 		String result = null;
-		String tempEntity = "";
+		String tempEntity = null;
 		String tempScript = "none";
 		String tempCondition = "none";
 		
@@ -55,12 +55,6 @@ public class SEtrigger {
 		if ((event == triggerEvent.onEnter) || (event == triggerEvent.onLeave))
 			if (triggerCuboid!=null) tempEntity = triggerCuboid.getName();
 
-		/*
-		// event:onInteract(),script:staticScript
-		if (event == triggerEvent.onInteract)
-			if (triggerLocation!=null) tempEntity = (triggerLocation.getBlockX()+";"+triggerLocation.getBlockY()+";"+triggerLocation.getBlockZ());
-		*/
-		
 		// event:onCommand(),script:staticScript
 		if (event == triggerEvent.onCommand)
 			if (triggerCommand!=null) tempEntity = triggerCommand;
@@ -72,7 +66,10 @@ public class SEtrigger {
 		if (triggerScript!=null) tempScript = triggerScript.getName();
 		
 		// name:TestTrigger,event:none(),script:none;
-		result = "name:"+this.name+",event:"+this.event.toString()+"("+tempEntity+"),condition:"+tempCondition+",script:"+tempScript;
+		if (tempEntity == null)
+			result = "name:"+this.name+",event:"+this.event.toString()+",condition:"+tempCondition+",script:"+tempScript;
+		else
+			result = "name:"+this.name+",event:"+this.event.toString()+"("+tempEntity+"),condition:"+tempCondition+",script:"+tempScript;
 		return result;
 	}
 

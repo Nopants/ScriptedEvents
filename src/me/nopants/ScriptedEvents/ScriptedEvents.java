@@ -13,9 +13,11 @@ import com.nijikokun.bukkit.Permissions.Permissions;
 
 public class ScriptedEvents extends JavaPlugin {
 
+	public PluginManager pm;
 	public SEdataManager SEdata;
 	public SEutils utils;
 	public SEplayerListener playerListener;
+	public SEblockListener blockListener;
 	public SEtriggerManager triggerManager;
 	public PermissionHandler permissionHandler;
 	public boolean hasPermissions = false;
@@ -36,11 +38,13 @@ public class ScriptedEvents extends JavaPlugin {
 		utils = SEdata.utils;
 		utils.writeinlog(1, "ScriptedEvents: "+version+" enabled");
 		setupPermissions();
+		
 		commander = new SEcommander(this);
 		playerListener = new SEplayerListener(this);
+		blockListener = new SEblockListener(this);
 		triggerManager = new SEtriggerManager(this);
 		
-		PluginManager pm = this.getServer().getPluginManager();
+		pm = this.getServer().getPluginManager();
 		pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener,
 				Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_TELEPORT, playerListener,
@@ -51,11 +55,22 @@ public class ScriptedEvents extends JavaPlugin {
 				Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener,
 				Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener,
+				Event.Priority.Normal, this);
+		
+		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener,
+				Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener,
+				Event.Priority.Normal, this);
+		
 		SEdata.initializeData();
 	}
 
 	// onDisable Plugin
 	public void onDisable() {
+		triggerManager = null;
+		playerListener = null;
+		commander = null;
 		utils.writeinlog(1, "Scripted Events "+version+" disabled");
 	}
 	

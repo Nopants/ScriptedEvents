@@ -34,6 +34,28 @@ public class SEutils {
 	}
 	*/
 
+	// returns the distance from one location to another in blocks
+	public int getDist(Location location2, Location location1) {
+		Location playerLocation = new Location(location1.getWorld(),location1.getBlockX(),location1.getBlockY(),location1.getBlockZ());
+		Location targetLocation = new Location(location2.getWorld(),location2.getBlockX(),location2.getBlockY(),location2.getBlockZ());
+		int playerX = playerLocation.getBlockX();
+		int playerY = playerLocation.getBlockY();
+		int playerZ = playerLocation.getBlockZ();
+		int targetX = targetLocation.getBlockX();
+		int targetY = targetLocation.getBlockY();
+		int targetZ = targetLocation.getBlockZ();
+
+		double step = Math.sqrt((playerX - targetX) * (playerX - targetX)
+				+ (playerY - targetY) * (playerY - targetY)
+				+ (playerZ - targetZ) * (playerZ - targetZ));
+		
+		//ScriptedEvents.writeInLog(1, "Line"); // debug
+		//ScriptedEvents.writeInLog(1, "PlayerLocation: "+parser.locationToString(playerLocation)); // debug
+		//ScriptedEvents.writeInLog(1, "TargetLocation: "+parser.locationToString(targetLocation)); // debug
+		
+		return new Double(step).intValue();
+	}
+	
 	// returns an ItemStack if the player has a the item with the itemID
 	public ItemStack searchItem(Player player, int itemID, int amount) {
 		ItemStack tempItem = null;
@@ -139,6 +161,9 @@ public class SEutils {
 		if (input.equalsIgnoreCase("onLeave")) result = triggerEvent.onLeave;
 		if (input.equalsIgnoreCase("onInteract")) result = triggerEvent.onInteract;
 		if (input.equalsIgnoreCase("onCommand")) result = triggerEvent.onCommand;
+		if (input.equalsIgnoreCase("onBlockBreak")) result = triggerEvent.onBlockBreak;
+		if (input.equalsIgnoreCase("onBlockPlace")) result = triggerEvent.onBlockPlace;
+		if (input.equalsIgnoreCase("onRespawn")) result = triggerEvent.onRespawn;
 		if (input.equalsIgnoreCase("none")) result = triggerEvent.none;
 		
 		return result;
@@ -175,7 +200,8 @@ public class SEutils {
 				
 				// Event
 				temp = triggerStrings[1].substring(6);
-				temp = temp.substring(0, temp.indexOf('('));
+				if (temp.contains("(") && temp.contains(")"))
+					temp = temp.substring(0, temp.indexOf('('));
 				event = stringToEvent(temp);
 				//SElog(1, "TriggerEvent: "+event); // debug
 				
@@ -288,6 +314,7 @@ public class SEutils {
 		} else return null;
 	}
 	
+
 	// returns the player named 'playerName', if he is online 
 	public Player stringToPlayer(Player[] onlinePlayers, String playerName) {
 		Player result = null;

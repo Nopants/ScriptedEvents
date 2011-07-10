@@ -2,7 +2,6 @@ package me.nopants.ScriptedEvents;
 
 import org.bukkit.Location;
 
-import java.lang.Math;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +12,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class SEplayerListener extends PlayerListener {
@@ -39,26 +39,17 @@ public class SEplayerListener extends PlayerListener {
 
 
 
-	// ----------//
-	// Functions
-	// ----------//
+	//---------------------//
+	// FUNCTIONS
+	//---------------------//
 	
-	// releases a list of triggers
-	public void releaseTriggerList(Map<Integer, SEtrigger> triggerList, SEentitySet entitySet) {
-		for (int i=1; i <= triggerList.size(); i++) {
-			SEinterpreter interpreter = new SEinterpreter(plugin, triggerList.get(i), entitySet, SEinterpreter.kindType.script);
-			interpreter.start();
-		}
-		
-	}
-
 	// resets the distance a player has to walk until the next check
 	public void resetDist(Player player) {
 		distLeft.put(player, 0);
 	}
 	
 	// returns the nearest cuboid to a location
-	private SEcuboid getNextCuboid(Location playerLocation) {
+	public SEcuboid getNextCuboid(Location playerLocation) {
 		Location tempLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), playerLocation.getY(), playerLocation.getZ());
 		SEcuboid result = SEdata.getCuboidList().get(1);
 		
@@ -69,23 +60,13 @@ public class SEplayerListener extends PlayerListener {
 		    	}
 		    	else {
 		    		if ((SEdata.getCuboidList().get(i) != null) && (SEdata.getCuboidList().get(i).getWorld().equalsIgnoreCase(playerLocation.getWorld().getName())))
-		    			if ((getDist(SEdata.getCuboidList().get(i).getRelativeCenter(tempLocation), playerLocation))<(getDist(result.getRelativeCenter(tempLocation), playerLocation))) {
+		    			if ((utils.getDist(SEdata.getCuboidList().get(i).getRelativeCenter(tempLocation), playerLocation))<(utils.getDist(result.getRelativeCenter(tempLocation), playerLocation))) {
 		    				result = SEdata.getCuboidList().get(i);
 		    		}
 		    	}
 		    }
 		}
 		return result;
-	}
-
-	// returns the vertex1 used by the cuboid selection
-	public Location getVertex1(Player player) {
-		return vertex1.get(player);
-	}
-
-	// returns the vertex2 used by the cuboid selection
-	public Location getVertex2(Player player) {
-		return vertex2.get(player);
 	}
 
 	// returns if a player is inside a cuboid
@@ -123,15 +104,30 @@ public class SEplayerListener extends PlayerListener {
 		} else result = false;
 		return result;
 	}
+	
+	// returns the vertex1 used by the cuboid selection
+	public Location getVertex1(Player player) {
+		return vertex1.get(player);
+	}
 
+	// returns the vertex2 used by the cuboid selection
+	public Location getVertex2(Player player) {
+		return vertex2.get(player);
+	}
+
+	
+	//---------------------//
+	// EVENTS
+	//---------------------//
+	
 	// CONTAINS onLeave: is called if a player left a cuboid
-	private void onPlayerLeaveCuboid(Player leavingPlayer, SEcuboid leftCuboid) {
+	public void onPlayerLeaveCuboid(Player leavingPlayer, SEcuboid leftCuboid) {
 		
 		//---[ onLeave ]--------------------------------------------------------------//
 		// get the triggers matching to the entered Cuboid and the event onEnter
 		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onLeave, leftCuboid));
 		// release the triggers
-		releaseTriggerList(triggerList, new SEentitySet(leavingPlayer, leftCuboid));
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(leavingPlayer, leftCuboid));
 		//----------------------------------------------------------------------------//
 		
 		if (SEdata.getDebugees(leavingPlayer)) utils.SEmessage(leavingPlayer, leavingPlayer.getName() + " left '"
@@ -146,159 +142,11 @@ public class SEplayerListener extends PlayerListener {
 		// get the triggers matching to the entered Cuboid and the event onEnter
 		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onEnter, enteredCuboid));
 		// release the triggers
-		releaseTriggerList(triggerList, new SEentitySet(enteringPlayer, enteredCuboid));
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(enteringPlayer, enteredCuboid));
 		//----------------------------------------------------------------------------//
 		
 		if (SEdata.getDebugees(enteringPlayer)) utils.SEmessage(enteringPlayer, enteringPlayer.getName() + " entered '"
 				+ enteredCuboid.getName() + "'"); // debug
-	}
-
-	// returns the distance from a target to a player in blocks
-	public int getDist(Location location2, Location location1) {
-		Location playerLocation = new Location(location1.getWorld(),location1.getBlockX(),location1.getBlockY(),location1.getBlockZ());
-		Location targetLocation = new Location(location2.getWorld(),location2.getBlockX(),location2.getBlockY(),location2.getBlockZ());
-		int playerX = playerLocation.getBlockX();
-		int playerY = playerLocation.getBlockY();
-		int playerZ = playerLocation.getBlockZ();
-		int targetX = targetLocation.getBlockX();
-		int targetY = targetLocation.getBlockY();
-		int targetZ = targetLocation.getBlockZ();
-
-		double step = Math.sqrt((playerX - targetX) * (playerX - targetX)
-				+ (playerY - targetY) * (playerY - targetY)
-				+ (playerZ - targetZ) * (playerZ - targetZ));
-		
-		//ScriptedEvents.writeInLog(1, "Line"); // debug
-		//ScriptedEvents.writeInLog(1, "PlayerLocation: "+parser.locationToString(playerLocation)); // debug
-		//ScriptedEvents.writeInLog(1, "TargetLocation: "+parser.locationToString(targetLocation)); // debug
-		
-		return new Double(step).intValue();
-	}
-
-	// is called if a player moves onto another Block
-	public void onNewPos(Player movingPlayer) {
-		SEcuboid nextCuboid;
-		Location playerlocation = new Location(movingPlayer.getLocation().getWorld(),movingPlayer.getLocation().getX(),movingPlayer.getLocation().getY(),movingPlayer.getLocation().getZ());	
-		
-		// if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, "Step!"); // debug
-		
-		// if there are no cuboids saved, nothing has to be done
-		if (SEdata.getCuboidList().size()>0) {
-			// find the nearest cuboid
-			nextCuboid = getNextCuboid(playerlocation); 
-			if (nextCuboid != null) {
-			
-				//------------check-----------------------------------------------//
-				// 1. find the nearest cuboid                                     //
-				// 2. check if player is inside nearest cuboid                    //
-				// 3. get new distance to the nearest cuboid                      //
-				// 4. decrement distance by 2 if player is moving towards an edge //
-				//	
-			
-				// ------------------------------------------------------------------------------------------------------------//
-				// initialize via doing a check on firstRun, without decrementing the distance, or else decrement the distance //
-				// ------------------------------------------------------------------------------------------------------------//
-				if (dist.containsKey(movingPlayer)) {
-				
-					// decrement distance
-					distLeft.put(movingPlayer, (distLeft.get(movingPlayer) - 1));
-				
-				} else {
-
-					// ---------------- Initialization via Check ----------------------//
-					
-					// if player is inside region call onEnterCuboid
-					if (playerInsideCuboid(playerlocation, nextCuboid)) {
-						inCuboid.put(movingPlayer, true);
-						onPlayerEnterCuboid(movingPlayer, nextCuboid);
-					} else
-						inCuboid.put(movingPlayer, false);
-				
-					// initialize distance to the nearest Cuboid
-					distLeft.put(
-							movingPlayer,
-							getDist(nextCuboid.getRelativeCenter(playerlocation), playerlocation));
-
-					// if the player moves towards an edge of the cuboid, the distance hat to be decreased by 2.
-					// this is because of some issue with diagonal movement. i don't know exactly why.
-					if (nextCuboid.edgeOrientation(playerlocation)) {
-						if (distLeft.get(movingPlayer) > 2) {
-							distLeft.put(movingPlayer, (distLeft.get(movingPlayer) - 2));
-						}
-					}
-				
-					dist.put(movingPlayer, distLeft.get(movingPlayer));
-				
-					// ----------------------------------------------------------------//
-				}
-
-				// -------------------------------------------------------//
-				// if distance to check has been traveled, do a new check //
-				// -------------------------------------------------------//
-				if (distLeft.get(movingPlayer) <= 0) {
-
-					// ------------------------ Do Check ------------------------------//
-				
-					if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, "Check!"); // debug
-				
-					// find the nearest Cuboid
-					nextCuboid = getNextCuboid(playerlocation);
-				
-					// if a player is inside a Cuboid but his inCuboid flag is 'false' call onPlayerEnterCuboid
-					// if a player is not inside a Cuboid but this inCuboid flag is 'true' call onPlayerLeaveCuboid
-					if (playerInsideCuboid(playerlocation, nextCuboid)) {
-						if (!(inCuboid.get(movingPlayer))) {
-							onPlayerEnterCuboid(movingPlayer, nextCuboid);
-							inCuboid.put(movingPlayer, true);
-						}
-					} else {
-						if (inCuboid.get(movingPlayer)) {
-							onPlayerLeaveCuboid(movingPlayer, nextCuboid);
-							inCuboid.put(movingPlayer, false);
-						}
-					}
-				
-					// initialize distance to the nearest Cuboid
-					distLeft.put(
-							movingPlayer,
-							getDist(nextCuboid.getRelativeCenter(playerlocation), playerlocation));
-
-					// if the player moves towards an edge of the cuboid, the distance hat to be decreased by 2.
-					// this is because of some issue with diagonal movement. i don't know exactly why.
-					if (nextCuboid.edgeOrientation(playerlocation)) {
-						if (distLeft.get(movingPlayer) > 2) {
-							distLeft.put(movingPlayer, (distLeft.get(movingPlayer) - 2));
-						}
-					}
-
-					dist.put(movingPlayer, distLeft.get(movingPlayer));
-				
-					// ----------------------------------------------------------------//
-
-				}
-			}
-			if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, dist.get(movingPlayer)+"/"+distLeft.get(movingPlayer)); // debug
-		}
-	}
-
-	// is called if a player moves
-	public void onPlayerMove(PlayerMoveEvent event) {
-		Player player = event.getPlayer();
-
-		// if (getDebugees(player)) ScriptedEvents.SEmessage(player, "move!");
-
-		if (!(lastLocation.containsKey(player))) {
-			lastLocation.put(player, player.getLocation());
-			onNewPos(player);
-		} else { // check if the player has actually moved a block and call
-					// onNewPos
-			if (lastLocation.get(player).getBlock() != player.getLocation()
-					.getBlock()) {
-				lastLocation.put(player, player.getLocation());
-				onNewPos(player);
-			}
-		}
-
 	}
 
 	// CONTAINS onInteractAt: is called if a player interacts with something
@@ -309,7 +157,7 @@ public class SEplayerListener extends PlayerListener {
 		// get the triggers matching to the entered Cuboid and the event onEnter
 		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onInteract));
 		// release the triggers
-		releaseTriggerList(triggerList, new SEentitySet(event));		
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));		
 		event.setCancelled(cancel);
 		cancel = false;
 		//----------------------------------------------------------------------------//
@@ -364,17 +212,159 @@ public class SEplayerListener extends PlayerListener {
 		
 		if (!triggerList.isEmpty()) {
 			// release the triggers matching to the entered Cuboid and the event onInteractAt
-			releaseTriggerList(triggerList, new SEentitySet(player, commandLabel, args));
+			plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(player, commandLabel, args));
 			event.setCancelled(true);
 		}
 		//----------------------------------------------------------------------------//			
 
 	}
+
+	// is called if a player is teleported
+	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		//---[ onRespawn ]------------------------------------------------------------//
+		// return the triggers matching to the entered Cuboid and the event onEnter
+		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onRespawn));
+		
+		if (!triggerList.isEmpty()) {
+			// release the triggers matching to the entered Cuboid and the event onInteractAt
+			plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
+		}
+		//----------------------------------------------------------------------------//			
+	}
 	
+	
+	// is called if a player moves onto another Block
+	public void onNewPos(Player movingPlayer) {
+		SEcuboid nextCuboid;
+		Location playerlocation = new Location(movingPlayer.getLocation().getWorld(),movingPlayer.getLocation().getX(),movingPlayer.getLocation().getY(),movingPlayer.getLocation().getZ());	
+		
+		// if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, "Step!"); // debug
+		
+		// if there are no cuboids saved, nothing has to be done
+		if (SEdata.getCuboidList().size()>0) {
+			// find the nearest cuboid
+			nextCuboid = getNextCuboid(playerlocation); 
+			if (nextCuboid != null) {
+			
+				//------------check-----------------------------------------------//
+				// 1. find the nearest cuboid                                     //
+				// 2. check if player is inside nearest cuboid                    //
+				// 3. get new distance to the nearest cuboid                      //
+				// 4. decrement distance by 2 if player is moving towards an edge //
+				//	
+			
+				// ------------------------------------------------------------------------------------------------------------//
+				// initialize via doing a check on firstRun, without decrementing the distance, or else decrement the distance //
+				// ------------------------------------------------------------------------------------------------------------//
+				if (dist.containsKey(movingPlayer)) {
+				
+					// decrement distance
+					distLeft.put(movingPlayer, (distLeft.get(movingPlayer) - 1));
+				
+				} else {
+
+					// ---------------- Initialization via Check ----------------------//
+					
+					// if player is inside region call onEnterCuboid
+					if (playerInsideCuboid(playerlocation, nextCuboid)) {
+						inCuboid.put(movingPlayer, true);
+						onPlayerEnterCuboid(movingPlayer, nextCuboid);
+					} else
+						inCuboid.put(movingPlayer, false);
+				
+					// initialize distance to the nearest Cuboid
+					distLeft.put(
+							movingPlayer,
+							utils.getDist(nextCuboid.getRelativeCenter(playerlocation), playerlocation));
+
+					// if the player moves towards an edge of the cuboid, the distance hat to be decreased by 2.
+					// this is because of some issue with diagonal movement. i don't know exactly why.
+					if (nextCuboid.edgeOrientation(playerlocation)) {
+						if (distLeft.get(movingPlayer) > 2) {
+							distLeft.put(movingPlayer, (distLeft.get(movingPlayer) - 2));
+						}
+					}
+				
+					dist.put(movingPlayer, distLeft.get(movingPlayer));
+				
+					// ----------------------------------------------------------------//
+				}
+
+				// -------------------------------------------------------//
+				// if distance to check has been traveled, do a new check //
+				// -------------------------------------------------------//
+				if (distLeft.get(movingPlayer) <= 0) {
+
+					// ------------------------ Do Check ------------------------------//
+				
+					if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, "Check!"); // debug
+				
+					// find the nearest Cuboid
+					nextCuboid = getNextCuboid(playerlocation);
+				
+					// if a player is inside a Cuboid but his inCuboid flag is 'false' call onPlayerEnterCuboid
+					// if a player is not inside a Cuboid but this inCuboid flag is 'true' call onPlayerLeaveCuboid
+					if (playerInsideCuboid(playerlocation, nextCuboid)) {
+						if (!(inCuboid.get(movingPlayer))) {
+							onPlayerEnterCuboid(movingPlayer, nextCuboid);
+							inCuboid.put(movingPlayer, true);
+						}
+					} else {
+						if (inCuboid.get(movingPlayer)) {
+							onPlayerLeaveCuboid(movingPlayer, nextCuboid);
+							inCuboid.put(movingPlayer, false);
+						}
+					}
+				
+					// initialize distance to the nearest Cuboid
+					distLeft.put(
+							movingPlayer,
+							utils.getDist(nextCuboid.getRelativeCenter(playerlocation), playerlocation));
+
+					// if the player moves towards an edge of the cuboid, the distance hat to be decreased by 2.
+					// this is because of some issue with diagonal movement. i don't know exactly why.
+					if (nextCuboid.edgeOrientation(playerlocation)) {
+						if (distLeft.get(movingPlayer) > 2) {
+							distLeft.put(movingPlayer, (distLeft.get(movingPlayer) - 2));
+						}
+					}
+
+					dist.put(movingPlayer, distLeft.get(movingPlayer));
+				
+					// ----------------------------------------------------------------//
+
+				}
+			}
+			if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, dist.get(movingPlayer)+"/"+distLeft.get(movingPlayer)); // debug
+		}
+	}
+
+	// is called if a player moves
+	public void onPlayerMove(PlayerMoveEvent event) {
+		Player player = event.getPlayer();
+
+		// if (getDebugees(player)) ScriptedEvents.SEmessage(player, "move!");
+
+		if (!(lastLocation.containsKey(player))) {
+			lastLocation.put(player, player.getLocation());
+			onNewPos(player);
+		} else { // check if the player has actually moved a block and call
+					// onNewPos
+			if (lastLocation.get(player).getBlock() != player.getLocation()
+					.getBlock()) {
+				lastLocation.put(player, player.getLocation());
+				onNewPos(player);
+			}
+		}
+
+	}
+	
+	// is called if a player is teleported
 	public void onPlayerTeleport(PlayerTeleportEvent event) {
 		resetDist(event.getPlayer());
 	}
 
+	// is called if a player uses a portal
 	public void onPlayerPortal(PlayerPortalEvent event) {
 		resetDist(event.getPlayer());
 	}
