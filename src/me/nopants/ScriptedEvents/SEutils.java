@@ -8,8 +8,13 @@ import java.util.logging.Logger;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
 
-import me.nopants.ScriptedEvents.SEcondition.logicalOperator;
-import me.nopants.ScriptedEvents.SEtrigger.triggerEvent;
+import me.nopants.ScriptedEvents.type.SEcondition;
+import me.nopants.ScriptedEvents.type.SEcuboid;
+import me.nopants.ScriptedEvents.type.SEentitySet;
+import me.nopants.ScriptedEvents.type.SEscript;
+import me.nopants.ScriptedEvents.type.SEtrigger;
+import me.nopants.ScriptedEvents.type.SEcondition.logicalOperator;
+import me.nopants.ScriptedEvents.type.SEtrigger.triggerEvent;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -34,6 +39,15 @@ public class SEutils {
 	}
 	*/
 
+	public int countChar(String input, char c) {
+		int result = 0;
+		for (int i=0; i<input.length();i++){
+			if (input.charAt(i) == c)
+				result++;
+		}
+		return result;
+	}
+	
 	// returns the distance from one location to another in blocks
 	public int getDist(Location location2, Location location1) {
 		Location playerLocation = new Location(location1.getWorld(),location1.getBlockX(),location1.getBlockY(),location1.getBlockZ());
@@ -313,7 +327,6 @@ public class SEutils {
 			return location;
 		} else return null;
 	}
-	
 
 	// returns the player named 'playerName', if he is online 
 	public Player stringToPlayer(Player[] onlinePlayers, String playerName) {

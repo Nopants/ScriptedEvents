@@ -1,4 +1,4 @@
-package me.nopants.ScriptedEvents;
+package me.nopants.ScriptedEvents.type;
 
 import java.io.File;
 import java.util.HashMap;

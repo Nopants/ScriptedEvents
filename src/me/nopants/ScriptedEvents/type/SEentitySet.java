@@ -1,6 +1,6 @@
-package me.nopants.ScriptedEvents;
+package me.nopants.ScriptedEvents.type;
 
-import me.nopants.ScriptedEvents.SEtrigger.triggerEvent;
+import me.nopants.ScriptedEvents.type.SEtrigger.triggerEvent;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -19,8 +19,8 @@ public class SEentitySet {
 	public int randomMax = 0;
 	public int randomMin = 0;
 	
-	int typeID = -1;
-	int data = -1;
+	public int typeID = -1;
+	public int data = -1;
 	
 	public Player player = null;
 	public SEcuboid cuboid = null;

@@ -2,6 +2,9 @@ package me.nopants.ScriptedEvents;
 
 import java.util.Map;
 
+import me.nopants.ScriptedEvents.type.SEentitySet;
+import me.nopants.ScriptedEvents.type.SEtrigger;
+
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPlaceEvent;

@@ -15,6 +15,12 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import me.nopants.ScriptedEvents.type.SEcondition;
+import me.nopants.ScriptedEvents.type.SEcuboid;
+import me.nopants.ScriptedEvents.type.SEentitySet;
+import me.nopants.ScriptedEvents.type.SEscript;
+import me.nopants.ScriptedEvents.type.SEtrigger;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.config.Configuration;

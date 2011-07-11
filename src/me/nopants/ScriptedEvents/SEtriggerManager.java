@@ -20,6 +20,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 */
 
+import me.nopants.ScriptedEvents.type.SEcuboid;
+import me.nopants.ScriptedEvents.type.SEentitySet;
+import me.nopants.ScriptedEvents.type.SEtrigger;
+
 public class SEtriggerManager {
 	private SEdataManager SEdata;
 	//private SEutils utils;
@@ -36,10 +40,11 @@ public class SEtriggerManager {
 	// releases a list of triggers
 	public void releaseTriggerList(Map<Integer, SEtrigger> triggerList, SEentitySet entitySet) {
 		for (int i=1; i <= triggerList.size(); i++) {
-			SEinterpreter interpreter = new SEinterpreter(plugin, triggerList.get(i), entitySet, SEinterpreter.kindType.script);
-			interpreter.start();
+			if (triggerList.get(i).getScript() != null) {
+				SEinterpreter interpreter = new SEinterpreter(plugin, triggerList.get(i), entitySet, SEinterpreter.kindType.script);
+				interpreter.start();	
+			}
 		}
-		
 	}
 	
 	// returns the triggers matching to the event and entities

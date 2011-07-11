@@ -8,7 +8,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import me.nopants.ScriptedEvents.SEcondition.logicalOperator;
+import me.nopants.ScriptedEvents.type.SEcondition;
+import me.nopants.ScriptedEvents.type.SEcuboid;
+import me.nopants.ScriptedEvents.type.SEentitySet;
+import me.nopants.ScriptedEvents.type.SEscript;
+import me.nopants.ScriptedEvents.type.SEtrigger;
+import me.nopants.ScriptedEvents.type.SEcondition.logicalOperator;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -35,6 +40,7 @@ public class SEinterpreter extends Thread {
 	SEentitySet entitySet = null;
 	boolean isWorking = true;
 	
+	String workingPlace = null;
 	int scriptLine = 0;
 	int conditionLine = 0;
 	int workingLine = 0;
@@ -42,17 +48,29 @@ public class SEinterpreter extends Thread {
 	boolean check = true;
 	boolean If = false;
 	
-	String unexpectedExpression = "Unexpected Expression in line: ";
-	String unknownExpression = "Unknown Expression in line: ";
-	String tooManyExpressions = "Too many Expressions in line: ";
-	String wrongArguments = "Wrong number of Arguments in line: ";
-	String missingArgument = "More Arguments expected in line: ";
-	String missingCloseBracket = "Closing bracket expected in line: ";
-	String missingOpenBracket = "Opening bracket expected in line: ";
-	String missingCloseAngleBracket = "Closing angle bracket expected in line: ";
-	String missingOpenAngleBracket = "Opening angle bracket expected in line: ";
-	String unexpectedBracket = "Unexpected bracket in line: ";
+	String unexpectedExpression = "Unexpected Expression";
+	String unknownExpression = "Unknown Expression";
+	String tooManyExpressions = "Too many Expressions";
+	String wrongArguments = "Wrong number of Arguments";
+	String missingArgument = "More Arguments expected";
+	String missingCloseBracket = "Closing bracket expected";
+	String missingOpenBracket = "Opening bracket expected";
+	String missingCloseAngleBracket = "Closing angle bracket expected";
+	String missingOpenAngleBracket = "Opening angle bracket expected";
+	String unexpectedBracket = "Unexpected bracket";
 	String sleep = "Interpreter thread doesn't want to go to sleep yet!";
+	
+	String invalidInteger = "Invalid Integer given";
+	String invalidEffect = "Invalid Effect given";
+	String invalidLocation = "Invalid Location given";
+	String calcFailed = "Calculation failed";
+	String playerNotFound = "Player not found/online given";
+	String worldNotFound = "World not found given";
+	String cuboidNotFound = "Cuboid not found given";
+	String triggerNotFound = "trigger not found given";
+	String setNotFound = "Set variable not found given";
+	String scriptNotFound = "Script not found given";
+	String conditionNotFound = "Condition not found given";
 	
 	Set<String> tempIntegers;
 	Set<String> tempStrings;
@@ -81,7 +99,8 @@ public class SEinterpreter extends Thread {
 			"changeBlockType",
 			"changeBlockData",
 			"playerCommand",
-			"playEffect"
+			"playEffect",
+			"teleport"
 			));
 
 	// all worldActions:
@@ -245,6 +264,19 @@ public class SEinterpreter extends Thread {
 		this.condition = newTrigger.getCondition();
 		this.entitySet = newEntitySet;
 		this.scriptLine = 1;
+		
+		if (kind == kindType.script) {
+			if (this.script.getScriptFile() != null)
+				this.workingPlace = this.script.getScriptFile().getName();
+			else
+				this.workingPlace = "SubScript";
+		}
+		if (kind == kindType.condition) {
+			if (this.condition.getConditionFile() != null)
+				this.workingPlace = this.condition.getConditionFile().getName();
+			else
+				this.workingPlace = "SubCondition?! There are no SubConditions! Better report this!";
+		}
 	}
 
 	// overrides run()
@@ -295,6 +327,18 @@ public class SEinterpreter extends Thread {
 	//-------------------//
 	// INTERPRETER STUFF //
 	//-------------------//
+	
+	public void sendError(String expression, String error) {
+		if (expression != null && workingPlace != null) {
+			utils.SElog(2, "\""+expression+"\": "+error+" in line: "+workingLine+" ("+workingPlace+")");
+			return;
+		}
+		if (workingPlace != null) {
+			utils.SElog(2, error+" in line: "+workingLine+" ("+workingPlace+")");
+			return;
+		}
+		utils.SElog(2, error+" in line: "+workingLine);
+	}
 	
 	// executes the interpreters script
 	public void executeScript(){
@@ -375,16 +419,18 @@ public class SEinterpreter extends Thread {
 			// BRACKETS are correct
 			if (correctBrackets(line)) {
 				
+				// remove comments
+				if (line.contains("#"))
+					line = line.substring(0, line.indexOf("#"));
+				
 				// ignore subscripts or comment-lines
 				if (! (line.startsWith("|") || line.startsWith("#") || line.isEmpty())) {
 					// dispatch and ignore server-commands
 					if (line.startsWith("/")) {
+						line = this.resolveVariables(line);
+						line = this.resolveFunctions(line);
 						plugin.getServer().dispatchCommand(new ConsoleCommandSender(plugin.getServer()),line.substring(1));
-					} else {
-						// remove comments
-						if (line.contains("#"))
-							line = line.substring(1, line.indexOf("#"));
-						
+					} else {		
 						// remove BRACKETS in dummy
 						String[] words;
 						if (line.contains("(") && line.contains(")")) {
@@ -396,7 +442,7 @@ public class SEinterpreter extends Thread {
 						
 						// ONE WORD per line (brackets are ignored)
 						if (words.length > 1) {
-							utils.SElog(2, tooManyExpressions+this.workingLine);
+							sendError(null, tooManyExpressions);
 						} else {
 							String expression;
 							
@@ -408,7 +454,7 @@ public class SEinterpreter extends Thread {
 							
 							// 1. UNKNOWN expression
 							if (!expressions.contains(expression)) {
-								utils.SElog(2, "\""+expression+"\": "+unknownExpression+this.workingLine);
+								sendError(expression, unknownExpression);
 								expression = null;
 							} else {
 								
@@ -419,7 +465,7 @@ public class SEinterpreter extends Thread {
 								// 2.1.1 BRACKET expression
 									if (line.contains("(") || line.contains(")")) {
 										if (!bracketExpressions.contains(expression)) {
-											utils.SElog(2, "\""+expression+"\": "+unexpectedBracket+this.workingLine);
+											sendError(expression, unexpectedBracket);
 										} else {
 											
 											// line:        doForCuboidBlocks(<myCuboid>,changeBlockType(world,<blockLocation>,0))
@@ -431,9 +477,15 @@ public class SEinterpreter extends Thread {
 											String mainBracket = line.substring(line.indexOf("(")+1, utils.findBracket(line, line.indexOf("(")));
 											
 											String dummy = mainBracket;
+											
 											while(dummy.contains("(") && dummy.contains(")")) {
 												String tempBracket = dummy.substring(dummy.indexOf("("), utils.findBracket(dummy, dummy.indexOf("("))+1);
 												dummy = dummy.replace(tempBracket, tempBracket.replaceAll(".", "X"));
+											}
+											
+											while(utils.countChar(dummy, '"')>1) {
+												String tempString = dummy.substring(dummy.indexOf("\""), dummy.indexOf("\"",dummy.indexOf("\"")+1)+1);
+												dummy = dummy.replace(tempString, tempString.replaceAll(".", "X"));
 											}
 											
 											String[] dummyInput = dummy.split(",");
@@ -445,6 +497,11 @@ public class SEinterpreter extends Thread {
 											}
 											
 											String[] input = dummyInput;
+											
+											for (int i=0; i<input.length;i++){
+												if (input[i].startsWith("\"") && input[i].endsWith("\""))
+													input[i] = input[i].substring(1, input[i].length()-1);
+											}
 											
 											// ONLY RESOLVE RELEVANT PARTS, NOT IRRELEVANT BRACKETS
 											input = resolveInput(input);											
@@ -483,6 +540,9 @@ public class SEinterpreter extends Thread {
 											}
 											if (expression.equals("playEffect")) {
 												playEffect(input);
+											}
+											if (expression.equals("teleport")) {
+												teleport(input);
 											}
 											
 											// SCRIPT ACTIONS
@@ -597,7 +657,7 @@ public class SEinterpreter extends Thread {
 									} else {
 								//	2.1.2 BRACKETLESS expression
 										if (bracketExpressions.contains(expression)) {
-											utils.SElog(2, "\""+expression+"\": "+missingArgument+this.workingLine);
+											sendError(expression, missingArgument);
 										} else {
 											// EXECUTION of bracketless expressions
 											if (expression.equals("do")) {
@@ -708,7 +768,7 @@ public class SEinterpreter extends Thread {
 										}
 									}	
 								} else {
-									utils.SElog(2, "\""+expression+"\": "+unexpectedExpression+this.workingLine);
+									sendError(expression, unexpectedExpression);
 								}
 							}
 						}
@@ -725,17 +785,17 @@ public class SEinterpreter extends Thread {
 	// INPUT STUFF //
 	//-------------//
 
-	public boolean checkInput(boolean check) {
-		if (!check)
-			utils.SElog(2, wrongArguments+this.workingLine);
+	public boolean checkInput(String expression, boolean check) {
+		if (!check) {
+			sendError(expression, wrongArguments);
+			//utils.SElog(2, wrongArguments+" in line: "+this.workingLine);
+		}
 		return check;
 	}
 	
-	// REWORK
-	public String inputToInteger(String input) {
+	public String inputToInteger(String expression, String input) {
 		String result = "null";
 		
-		// REWORK HERE
 		if (input.contains("(") && input.contains(")")) {
 			String temp = executeLine(input, functions);
 			if (temp != "null" && temp != null)
@@ -744,79 +804,81 @@ public class SEinterpreter extends Thread {
 			try {
 				result = String.valueOf(Integer.valueOf(input));
 			} catch (Exception e) {
-				utils.SElog(2, "No Integer given in line: "+this.workingLine);
+				sendError(expression, invalidInteger);
 			}
 		}
 		return result;
 	}
 	
 	// trys to turn an input String into a player and can send an error
-	public Player inputToPlayer(String input) {
+	public Player inputToPlayer(String expression, String input) {
 		Player result = null;
 		result = utils.stringToPlayer(plugin.getServer().getOnlinePlayers(), input);
 		if (result == null)
-			utils.SElog(2, "Player not found/online given in line: "+this.workingLine);
+			sendError(expression, playerNotFound);
 		return result;
 	}
 	
 	// trys to turn an input String into a world and can send an error
-	public World inputToWorld(String input) {
+	public World inputToWorld(String expression, String input) {
 		World result = null;
 		result = plugin.getServer().getWorld(input);
 		if (result == null)
-			utils.SElog(2, "World not found given in line: "+this.workingLine);
+			sendError(expression, worldNotFound);
 		return result;
 	}
 	
 	// trys to turn an input String into a cuboid and can send an error
-	public SEcuboid inputToCuboid(String input) {
+	public SEcuboid inputToCuboid(String expression, String input) {
 		SEcuboid result = null;
 		result = SEdata.getCuboidByID(SEdata.searchCuboidList(input));
 		if (result == null)
-			utils.SElog(2, "Cuboid not found given in line: "+this.workingLine);
+			sendError(expression, cuboidNotFound);
 		return result;
 	}
-	
+		
 	// trys to turn an input String into a trigger and can send an error
-	public SEtrigger inputToTrigger(String input) {
+	public SEtrigger inputToTrigger(String expression, String input) {
 		SEtrigger result = null;
 		result = SEdata.getTriggerByID(SEdata.searchTriggerList(input));
 		if (result == null)
-			utils.SElog(2, "Trigger not found given in line: "+this.workingLine);
+			sendError(expression, triggerNotFound);
 		return result;
 	}
 
 	// trys to turn an input String into a set-variable and can send an error
-	public Set<String> inputToSet(String input) {
+	public Set<String> inputToSet(String expression, String input) {
 		Set<String> result = null;
 		result = SEdata.getSetVarList().get(input); 
 		if (result == null)
-			utils.SElog(2, "Set variable not found given in line: "+this.workingLine);
+			sendError(expression, setNotFound);
 		return result;
 	}
 	
 	// trys to turn an input String into a script and can send an error
-	public SEscript inputToScript(String input) {
+	public SEscript inputToScript(String expression, String input) {
 		SEscript result = null;
 		result = SEdata.getScriptByID(SEdata.searchScriptList(input));
 		if (result == null)
-			utils.SElog(2, "Script not found given in line: "+this.workingLine);
+			sendError(expression, scriptNotFound);
 		return result;
 	}
 
 	// trys to turn an input String into a condition and can send an error
-	public SEcondition inputToCondition(String input) {
+	public SEcondition inputToCondition(String expression, String input) {
 		SEcondition result = null;
 		result = SEdata.getConditionByID(SEdata.searchConditionList(input));
 		if (result == null)
-			utils.SElog(2, "Condition not found given in line: "+this.workingLine);
+			sendError(expression, conditionNotFound);
 		return result;
 	}
 	
 	// trys to turn an input String into location and can send an error
-	public Location inputToLocation(String input) {
+	public Location inputToLocation(String expression, String input) {
 		Location result = null;
 		result = utils.stringToLocation(input);
+		if (result == null)
+			sendError(expression, invalidLocation);
 		return result;
 	}
 	
@@ -830,12 +892,12 @@ public class SEinterpreter extends Thread {
 				x--;
 			if (x<0) {
 				i = input.length();
-				utils.SElog(2, missingOpenBracket+this.workingLine);
+				sendError(null, missingOpenBracket);
 				result = false;
 			}
 		}
 		if (x>0) {
-			utils.SElog(2, missingCloseBracket+this.workingLine);
+			sendError(null, missingCloseBracket);
 			result = false;
 		}
 		return result;
@@ -851,12 +913,12 @@ public class SEinterpreter extends Thread {
 				x--;
 			if (x<0) {
 				i = input.length();
-				utils.SElog(2, missingOpenAngleBracket+this.workingLine);
+				sendError(null, missingOpenAngleBracket);
 				result = false;
 			}
 		}
 		if (x>0) {
-			utils.SElog(2, missingCloseAngleBracket+this.workingLine);
+			sendError(null, missingCloseAngleBracket);
 			result = false;
 		}
 		return result;
@@ -923,6 +985,7 @@ public class SEinterpreter extends Thread {
 	}
 
 	
+	
 	//---------------//
 	// WORLD ACTIONS //
 	//---------------//
@@ -965,8 +1028,9 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void removeItemInHand(String[] input) {
-		if (checkInput(input.length > 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		String name = "removeItemInHand";
+		if (checkInput(name, input.length > 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if ((targetPlayer != null)&&(targetPlayer.getItemInHand()!=null)) {
 				if (targetPlayer.getItemInHand().getAmount()>1) {
 					targetPlayer.getItemInHand().setAmount(targetPlayer.getItemInHand().getAmount()-1);	
@@ -980,18 +1044,19 @@ public class SEinterpreter extends Thread {
 
 	// removeItem(<player>,<type>[,<amount>])
 	public void removeItem(String[] input) {
-		if (checkInput(input.length == 2 || input.length == 3)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer != null && inputToInteger(input[1])!="null") {
+		String name = "removeItem";
+		if (checkInput(name, input.length == 2 || input.length == 3)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer != null && inputToInteger(name, input[1])!="null") {
 				
 				
 				int removeAmount = 1;
-				if (input.length==3 && inputToInteger(input[2]) != "null") {
-					removeAmount = Integer.valueOf(inputToInteger(input[2]));
+				if (input.length==3 && inputToInteger(name, input[2]) != "null") {
+					removeAmount = Integer.valueOf(inputToInteger(name, input[2]));
 					
 				}
 				
-				ItemStack tempItem = utils.searchItem(targetPlayer, Integer.valueOf(inputToInteger(input[1])), removeAmount);
+				ItemStack tempItem = utils.searchItem(targetPlayer, Integer.valueOf(inputToInteger(name, input[1])), removeAmount);
 				
 				if (tempItem!=null) {
 					if ((tempItem.getAmount()-removeAmount)<=0)
@@ -1007,15 +1072,16 @@ public class SEinterpreter extends Thread {
 	
 	// removeItemAt(<player>,<slot>[,<amount>])
 	public void removeItemAt(String[] input) {
-		if (checkInput(input.length == 2 || input.length == 3)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer != null && inputToInteger(input[1])!="null") {
-				int slot = Integer.valueOf(inputToInteger(input[1]));
+		String name = "removeItemAt";
+		if (checkInput(name, input.length == 2 || input.length == 3)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer != null && inputToInteger(name, input[1])!="null") {
+				int slot = Integer.valueOf(inputToInteger(name, input[1]));
 				ItemStack tempItem = targetPlayer.getInventory().getItem(slot);
 				
 				int removeAmount = 1;
-				if (input.length==3 && inputToInteger(input[2]) != "null")
-					removeAmount = Integer.valueOf(inputToInteger(input[2]));
+				if (input.length==3 && inputToInteger(name, input[2]) != "null")
+					removeAmount = Integer.valueOf(inputToInteger(name, input[2]));
 				
 				if (tempItem!=null) {
 					if ((tempItem.getAmount()-removeAmount)<=0)
@@ -1029,13 +1095,14 @@ public class SEinterpreter extends Thread {
 	
 	// giveItem(<player>,<type>[,<amount>])
 	public void giveItem(String[] input) {
-		if (checkInput(input.length == 2 || input.length == 3)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer != null && inputToInteger(input[1])!="null") {
-				int type = Integer.valueOf(inputToInteger(input[1]));
+		String name = "giveItem";
+		if (checkInput(name, input.length == 2 || input.length == 3)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer != null && inputToInteger(name, input[1])!="null") {
+				int type = Integer.valueOf(inputToInteger(name, input[1]));
 				int amount = 1;
-				if (input.length==3 && inputToInteger(input[2]) != "null")
-					amount = Integer.valueOf(inputToInteger(input[2]));
+				if (input.length==3 && inputToInteger(name, input[2]) != "null")
+					amount = Integer.valueOf(inputToInteger(name, input[2]));
 				ItemStack tempItem = new ItemStack(type);
 				tempItem.setAmount(amount);
 				targetPlayer.getInventory().addItem(tempItem);
@@ -1044,14 +1111,15 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void giveItemAt(String[] input) {
-		if (checkInput(input.length == 3 || input.length == 4)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer != null && inputToInteger(input[1])!="null" && inputToInteger(input[2])!="null") {
-				int slot = Integer.valueOf(inputToInteger(input[1]));
-				int type = Integer.valueOf(inputToInteger(input[2]));
+		String name = "giveItemAt";
+		if (checkInput(name, input.length == 3 || input.length == 4)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer != null && inputToInteger(name, input[1])!="null" && inputToInteger(name, input[2])!="null") {
+				int slot = Integer.valueOf(inputToInteger(name, input[1]));
+				int type = Integer.valueOf(inputToInteger(name, input[2]));
 				int amount = 1;
-				if (input.length==4 && inputToInteger(input[3]) != "null")
-					amount = Integer.valueOf(inputToInteger(input[3]));
+				if (input.length==4 && inputToInteger(name, input[3]) != "null")
+					amount = Integer.valueOf(inputToInteger(name, input[3]));
 				
 				ItemStack tempItem = new ItemStack(type);
 				tempItem.setAmount(amount);
@@ -1065,10 +1133,11 @@ public class SEinterpreter extends Thread {
 	}
 		
 	public void setHealth(String[] input) {
-		if (checkInput(input.length == 2)) {
-			if (inputToInteger(input[1])!="null") {
-				Player targetPlayer = inputToPlayer(input[0]);
-				int newHealth = Integer.valueOf(inputToInteger(input[1]));
+		String name = "setHealth";
+		if (checkInput(name, input.length == 2)) {
+			if (inputToInteger(name, input[1])!="null") {
+				Player targetPlayer = inputToPlayer(name, input[0]);
+				int newHealth = Integer.valueOf(inputToInteger(name, input[1]));
 				if (targetPlayer!=null) {
 					targetPlayer.setHealth(newHealth);
 				}	
@@ -1077,8 +1146,9 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void messageTo(String[] input) {
-		if (checkInput(input.length == 2)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		String name = "messageTo";
+		if (checkInput(name, input.length == 2)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer!=null) {
 				// targetPlayer.sendMessage(resolveFunctions(input[1])); hopefully not needed anymore
 				targetPlayer.sendMessage(input[1]);
@@ -1087,12 +1157,13 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void changeBlockType(String[] input) {
-		if (checkInput(input.length == 3)) {
-			if (inputToInteger(input[2])!="null") {
-				World targetWorld = inputToWorld(input[0]);
-				Location targetLocation = inputToLocation(input[1]);
+		String name = "changeBlockType";
+		if (checkInput(name, input.length == 3)) {
+			if (inputToInteger(name, input[2])!="null") {
+				World targetWorld = inputToWorld(name, input[0]);
+				Location targetLocation = inputToLocation(name, input[1]);
 				if (targetWorld!=null) {
-						targetWorld.getBlockAt(targetLocation).setTypeId(Integer.valueOf(inputToInteger(input[2])));	
+						targetWorld.getBlockAt(targetLocation).setTypeId(Integer.valueOf(inputToInteger(name, input[2])));	
 				}	
 			}
 			
@@ -1100,18 +1171,20 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void changeBlockData(String[] input) {
-		if (checkInput(input.length == 3)) {
-			World targetWorld = inputToWorld(input[0]);
-			Location targetLocation = inputToLocation(input[1]);
+		String name = "changeBlockData";
+		if (checkInput(name, input.length == 3)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
 			if (targetWorld!=null) {
-					targetWorld.getBlockAt(targetLocation).setData(Integer.valueOf(inputToInteger(input[2])).byteValue());
+					targetWorld.getBlockAt(targetLocation).setData(Integer.valueOf(inputToInteger(name, input[2])).byteValue());
 			}
 		}
 	}
 
 	public void playerCommand(String[] input) {
-		if (checkInput(input.length == 2)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		String name = "playerCommand";
+		if (checkInput(name, input.length == 2)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer!=null) {
 				targetPlayer.performCommand(input[1]);
 			}
@@ -1119,8 +1192,9 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void playEffect(String[] input) {
-		if (checkInput(input.length == 2)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		String name = "playEffect";
+		if (checkInput(name, input.length == 2)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			try {
 				/*
 				Avaiable Effects:
@@ -1143,17 +1217,15 @@ public class SEinterpreter extends Thread {
 		}
 	}
 
-	public String playerInv(String[] input) {
+	public String teleport(String[] input) {
+		String name = "teleport";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer!= null)
-				for (int i = 0; i<=39; i++) {
-					if (targetPlayer.getInventory().getItem(i) != null)
-						utils.SElog(1, i+": "+targetPlayer.getInventory().getItem(i).getDurability());		
-					
-				}
-				
+		if (checkInput(name, input.length == 2)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
+			if (targetPlayer!= null && targetLocation != null) {
+				targetPlayer.teleport(targetLocation);
+			}
 		}
 		return result;
 	}
@@ -1164,7 +1236,8 @@ public class SEinterpreter extends Thread {
 	//----------------//
 	
 	public void If(String[] input) {
-		if (checkInput(input.length == 1)) {
+		String name = "if";
+		if (checkInput(name, input.length == 1)) {
 			String temp = executeLine(input[0], conditions);
 			if (temp != "null") {
 				check = Boolean.valueOf(temp);	
@@ -1176,24 +1249,27 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void Then(String[] input) {
-		if (checkInput(input.length == 1) && If && check) {
+		String name = "then";
+		if (checkInput(name, input.length == 1) && If && check) {
 			executeLine(input[0], actions);
 			If = false;
 		}
 	}
 	
 	public void Else(String[] input) {
-		if (checkInput(input.length == 1) && If && !check) {
+		String name = "else";
+		if (checkInput(name, input.length == 1) && If && !check) {
 			executeLine(input[0], actions);
 			If = false;
 		}
 	}
 	
 	public void delay(String[] input) {
-		if (checkInput(input.length == 1)) {
-			if (inputToInteger(input[0])!="null") {
+		String name = "delay";
+		if (checkInput(name, input.length == 1)) {
+			if (inputToInteger(name, input[0])!="null") {
 				try {
-					sleep(Integer.valueOf(inputToInteger(input[0])));
+					sleep(Integer.valueOf(inputToInteger(name, input[0])));
 				} catch (InterruptedException e) {
 					utils.SElog(3, sleep);
 				}	
@@ -1202,8 +1278,9 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void trigger(String[] input) {
-		if (checkInput(input.length == 1)) {
-			SEtrigger tempTrigger = inputToTrigger(input[0]);
+		String name = "trigger";
+		if (checkInput(name, input.length == 1)) {
+			SEtrigger tempTrigger = inputToTrigger(name, input[0]);
 			
 			if (tempTrigger != null) {
 				SEinterpreter interpreter = new SEinterpreter(this.plugin, tempTrigger, entitySet, kindType.script);
@@ -1213,8 +1290,9 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void script(String[] input) {
-		if (checkInput(input.length == 1)) {
-			SEscript tempScript = inputToScript(input[0]);
+		String name = "script";
+		if (checkInput(name, input.length == 1)) {
+			SEscript tempScript = inputToScript(name, input[0]);
 			if (tempScript != null) {
 				SEentitySet subEntitySet = new SEentitySet();
 				subEntitySet.script = tempScript;
@@ -1225,9 +1303,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void doForCuboidBlocks(String[] input) {
-		if (checkInput(input.length == 2)) {
-			SEcuboid tempCuboid = inputToCuboid(input[0]);
-			World tempWorld = inputToWorld(tempCuboid.getWorld());
+		String name = "doForCuboidBlocks";
+		if (checkInput(name, input.length == 2)) {
+			SEcuboid tempCuboid = inputToCuboid(name, input[0]);
+			World tempWorld = inputToWorld(name, tempCuboid.getWorld());
 			String action = input[1]; 
 			
 			if (tempCuboid != null && tempWorld != null) {
@@ -1251,9 +1330,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void doForSetItems(String[] input) {
-		if (checkInput(input.length == 2)) {
+		String name = "doForSetItems";
+		if (checkInput(name, input.length == 2)) {
 			
-			Set<String> tempSet = inputToSet(input[0]);
+			Set<String> tempSet = inputToSet(name, input[0]);
 			String action = input[1];
 			
 			Iterator<String> lauf = tempSet.iterator();
@@ -1266,9 +1346,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void loop(String[] input) {
-		if (checkInput(input.length == 1)) {
-			if (inputToInteger(input[0])!="null") {
-				int cycles = Integer.valueOf(inputToInteger(input[0]));
+		String name = "loop";
+		if (checkInput(name, input.length == 1)) {
+			if (inputToInteger(name, input[0])!="null") {
+				int cycles = Integer.valueOf(inputToInteger(name, input[0]));
 				
 				if (this.cycles == -1 && cycles > 0) {
 					this.cycles = cycles;
@@ -1283,7 +1364,8 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public void While(String[] input) {
-		if (checkInput(input.length == 1)) {
+		String name = "while";
+		if (checkInput(name, input.length == 1)) {
 			String temp = executeLine(input[0], conditions);
 			if (temp != "null") {
 				check = Boolean.valueOf(temp);	
@@ -1301,8 +1383,9 @@ public class SEinterpreter extends Thread {
 	//-----------//
 	
 	public String calc(String[] input) {
+		String name = "calc";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
+		if (checkInput(name, input.length == 1)) {
 			try {
 				result = String.valueOf(utils.calc(input[0]));
 			} catch (Exception e) {
@@ -1313,9 +1396,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String health(String[] input) {
+		String name = "health";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer != null)
 				result = String.valueOf(targetPlayer.getHealth());
 		}
@@ -1323,9 +1407,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String itemInHand(String[] input) {
+		String name = "itemInHand";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer != null)
 				result = String.valueOf(targetPlayer.getItemInHand().getTypeId());
 		}
@@ -1333,11 +1418,12 @@ public class SEinterpreter extends Thread {
 	}
 
 	public String itemAtSlot(String[] input) {
+		String name = "itemAtSlot";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer != null && inputToInteger(input[1]) != "null") {
-				int slot = Integer.valueOf(inputToInteger(input[1]));
+		if (checkInput(name, input.length == 2)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer != null && inputToInteger(name, input[1]) != "null") {
+				int slot = Integer.valueOf(inputToInteger(name, input[1]));
 				result = String.valueOf(targetPlayer.getInventory().getItem(slot).getTypeId());
 			}
 		}
@@ -1345,15 +1431,16 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String searchItem(String[] input) {
+		String name = "searchItem";
 		String result = "null";
-		if (checkInput(input.length == 2 || input.length == 3)) {
-			Player targetPlayer = inputToPlayer(input[0]);
-			if (targetPlayer != null && inputToInteger(input[1]) != "null") {
-				int type = Integer.valueOf(inputToInteger(input[1]));
+		if (checkInput(name, input.length == 2 || input.length == 3)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer != null && inputToInteger(name, input[1]) != "null") {
+				int type = Integer.valueOf(inputToInteger(name, input[1]));
 				
 				int amount = 1;
-				if (input.length==3 && inputToInteger(input[2]) != "null")
-					amount = Integer.valueOf(inputToInteger(input[2]));
+				if (input.length==3 && inputToInteger(name, input[2]) != "null")
+					amount = Integer.valueOf(inputToInteger(name, input[2]));
 				
 				if (targetPlayer.getInventory().getItemInHand().getTypeId() == type &&
 					targetPlayer.getInventory().getItemInHand().getAmount() >= amount) {
@@ -1375,9 +1462,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String slotInHand(String[] input) {
+		String name = "slotInHand";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer != null) {
 				ItemStack itemInHand = targetPlayer.getItemInHand();
 				for (int i=0;i<=8;i++) {
@@ -1390,9 +1478,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String time(String[] input) {
+		String name = "time";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			World targetWorld= inputToWorld(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			World targetWorld= inputToWorld(name, input[0]);
 			if (targetWorld!= null)
 				result = String.valueOf(targetWorld.getTime());
 		}
@@ -1400,10 +1489,11 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String blockID(String[] input) {
+		String name = "blockID";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
-			World targetWorld = inputToWorld(input[0]);
-			Location targetLocation = inputToLocation(input[1]);
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
 			if ((targetWorld != null) && (targetLocation != null))
 				result = String.valueOf(targetWorld.getBlockAt(targetLocation).getTypeId());
 		}
@@ -1411,10 +1501,11 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String blockData(String[] input) {
+		String name = "blockData";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
-			World targetWorld = inputToWorld(input[0]);
-			Location targetLocation = inputToLocation(input[1]);
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
 			if ((targetWorld != null) && (targetLocation != null))
 				result = String.valueOf(targetWorld.getBlockAt(targetLocation).getData());
 		}
@@ -1422,9 +1513,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String isInBed(String[] input) {
+		String name = "isInBed";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer!= null)
 				result = String.valueOf(targetPlayer.isSleeping());
 		}
@@ -1432,9 +1524,10 @@ public class SEinterpreter extends Thread {
 	}
 
 	public String isSneaking(String[] input) {
+		String name = "isSneaking";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer!= null)
 				result = String.valueOf(targetPlayer.isSneaking());
 		}
@@ -1442,9 +1535,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String playerLocation(String[] input) {
+		String name = "playerLocation";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Player targetPlayer = inputToPlayer(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer!= null)
 				result = utils.locationToString(targetPlayer.getLocation());
 		}
@@ -1452,9 +1546,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String size(String[] input) {
+		String name = "size";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			Set<String> targetSet = inputToSet(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			Set<String> targetSet = inputToSet(name, input[0]);
 			if (targetSet!= null)
 				result = String.valueOf(targetSet.size());
 		}
@@ -1462,9 +1557,10 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String arg(String[] input) {
+		String name = "arg";
 		String result = "null";
-		if (checkInput(input.length == 1)) {
-			String i = inputToInteger(input[0]);
+		if (checkInput(name, input.length == 1)) {
+			String i = inputToInteger(name, input[0]);
 			if ((i!= "null") && (entitySet.args.length > Integer.valueOf(i)) && (Integer.valueOf(i)>=0))
 				result = entitySet.args[Integer.valueOf(i)];
 		}
@@ -1472,20 +1568,21 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String random(String[] input) {
+		String name = "random";
 		String result = "null";
 		Random generator = new Random();
 		int randomInt = 0;
 		
-		if (checkInput(input.length == 2 || input.length == 1)) {
+		if (checkInput(name, input.length == 2 || input.length == 1)) {
 			
-			if (input.length==1 && inputToInteger(input[0]) != "null") {
-				int max = Integer.valueOf(inputToInteger(input[0]));
+			if (input.length==1 && inputToInteger(name, input[0]) != "null") {
+				int max = Integer.valueOf(inputToInteger(name, input[0]));
 				randomInt = generator.nextInt(max);
 				result = String.valueOf(randomInt);
 			}
-			if (input.length==2 && inputToInteger(input[0]) != "null" && inputToInteger(input[1]) != "null") {
-				int min = Integer.valueOf(inputToInteger(input[0]));
-				int max = Integer.valueOf(inputToInteger(input[1]))-min+1;
+			if (input.length==2 && inputToInteger(name, input[0]) != "null" && inputToInteger(name, input[1]) != "null") {
+				int min = Integer.valueOf(inputToInteger(name, input[0]));
+				int max = Integer.valueOf(inputToInteger(name, input[1]))-min+1;
 				randomInt = generator.nextInt(max)+min;
 				result = String.valueOf(randomInt);
 			}
@@ -1499,23 +1596,25 @@ public class SEinterpreter extends Thread {
 	//------------//
 	
 	public String Equals(String[] input) {
+		String name = "equals";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
+		if (checkInput(name, input.length == 2)) {
 					result = String.valueOf(input[0].equals(input[1]));
 		}
 		return result;
 	}
 	
 	public String hasItem(String[] input) {
+		String name = "hasItem";
 		String result = "null";
-		if (checkInput(input.length == 2 || input.length == 3)) {
-			if (inputToPlayer(input[0]) != null && inputToInteger(input[1]) != "null") {
+		if (checkInput(name, input.length == 2 || input.length == 3)) {
+			if (inputToPlayer(name, input[0]) != null && inputToInteger(name, input[1]) != "null") {
 				utils.SElog(1, "test");
-				Player targetPlayer = inputToPlayer(input[0]);
-				int type = Integer.valueOf(inputToInteger(input[1]));
+				Player targetPlayer = inputToPlayer(name, input[0]);
+				int type = Integer.valueOf(inputToInteger(name, input[1]));
 				int amount = 1;
-				if (input.length==3 && inputToInteger(input[2]) != "null")
-					amount = Integer.valueOf(inputToInteger(input[2]));
+				if (input.length==3 && inputToInteger(name, input[2]) != "null")
+					amount = Integer.valueOf(inputToInteger(name, input[2]));
 				
 				ItemStack searchedItem = utils.searchItem(targetPlayer, type, amount);
 				result = String.valueOf(searchedItem != null);
@@ -1525,11 +1624,12 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String bigger(String[] input) {
+		String name = "bigger";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
-			if (inputToInteger(input[0]) != "null" && inputToInteger(input[1]) != "null") {
-				int one = Integer.valueOf(inputToInteger(input[0]));
-				int two = Integer.valueOf(inputToInteger(input[1]));
+		if (checkInput(name, input.length == 2)) {
+			if (inputToInteger(name, input[0]) != "null" && inputToInteger(name, input[1]) != "null") {
+				int one = Integer.valueOf(inputToInteger(name, input[0]));
+				int two = Integer.valueOf(inputToInteger(name, input[1]));
 				result = String.valueOf(one>two);
 			}
 		}
@@ -1537,18 +1637,20 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String contains(String[] input) {
+		String name = "contains";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
-			if (inputToSet(input[0]) != null) {
-				result = String.valueOf(inputToSet(input[0]).contains(input[1]));
+		if (checkInput(name, input.length == 2)) {
+			if (inputToSet(name, input[0]) != null) {
+				result = String.valueOf(inputToSet(name, input[0]).contains(input[1]));
 			}
 		}
 		return result;
 	}
 	
 	public String and(String[] input) {
+		String name = "and";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
+		if (checkInput(name, input.length == 2)) {
 			String check1 = executeLine(input[0], conditions);
 			String check2 = executeLine(input[1], conditions);
 			
@@ -1560,8 +1662,9 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String or(String[] input) {
+		String name = "or";
 		String result = "null";
-		if (checkInput(input.length == 2)) {
+		if (checkInput(name, input.length == 2)) {
 			String check1 = executeLine(input[0], conditions);
 			String check2 = executeLine(input[1], conditions);
 			
@@ -1573,10 +1676,11 @@ public class SEinterpreter extends Thread {
 	}
 	
 	public String check(String[] input) {
+		String name = "check";
 		String result = "null";
 		boolean tempCheck = false;
-		SEcondition tempCondition = inputToCondition(input[0]);
-		if (checkInput(input.length == 1)) {
+		SEcondition tempCondition = inputToCondition(name, input[0]);
+		if (checkInput(name, input.length == 1)) {
 			if (tempCondition != null && tempCondition.getConditionList() != null) {
 				SEentitySet subEntitySet = new SEentitySet();
 				subEntitySet.condition = tempCondition;

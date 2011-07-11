@@ -1,5 +1,9 @@
 package me.nopants.ScriptedEvents;
 
+import me.nopants.ScriptedEvents.type.SEcuboid;
+import me.nopants.ScriptedEvents.type.SEentitySet;
+import me.nopants.ScriptedEvents.type.SEtrigger;
+
 import org.bukkit.Location;
 
 import java.util.HashMap;

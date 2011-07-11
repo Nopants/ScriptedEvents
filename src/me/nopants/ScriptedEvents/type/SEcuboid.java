@@ -1,4 +1,5 @@
-package me.nopants.ScriptedEvents;
+package me.nopants.ScriptedEvents.type;
+
 
 import org.bukkit.Location;
 
@@ -12,7 +13,7 @@ public class SEcuboid {
 	// public SEOrientation Orientation = new SEOrientation(null, null, null);
 
 	// constructor
-	SEcuboid(String newWorld, String newName, Location newCuboidCorner1, Location newCuboidCorner2) {
+	public SEcuboid(String newWorld, String newName, Location newCuboidCorner1, Location newCuboidCorner2) {
 		this.setCorner(1, newCuboidCorner1);
 		this.setCorner(2, newCuboidCorner2);
 		this.name = newName;

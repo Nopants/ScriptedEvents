@@ -1,4 +1,5 @@
-package me.nopants.ScriptedEvents;
+package me.nopants.ScriptedEvents.type;
+
 
 public class SEtrigger {
 	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, onBlockBreak, onBlockPlace, onRespawn, none};

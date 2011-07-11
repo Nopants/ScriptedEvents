@@ -1,15 +1,15 @@
-package me.nopants.ScriptedEvents;
+package me.nopants.ScriptedEvents.type;
 
 public class SEorientation {
 	public enum XOrientation {left, central, right};
 	public enum YOrientation {down, central, up};
 	public enum ZOrientation {front, central, back};
-	XOrientation xorientation;
-	YOrientation yorientation;
-	ZOrientation zorientation;
+	public XOrientation xorientation;
+	public YOrientation yorientation;
+	public ZOrientation zorientation;
 	
 	// constructor
-	SEorientation(XOrientation newXorientation, YOrientation newYorientation, ZOrientation newZorientation) {
+	public SEorientation(XOrientation newXorientation, YOrientation newYorientation, ZOrientation newZorientation) {
 		this.xorientation = XOrientation.central;
 		this.yorientation = YOrientation.central;
 		this.zorientation = ZOrientation.central;
