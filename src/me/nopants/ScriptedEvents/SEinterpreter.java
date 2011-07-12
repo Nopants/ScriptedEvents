@@ -432,21 +432,21 @@ public class SEinterpreter extends Thread {
 						plugin.getServer().dispatchCommand(new ConsoleCommandSender(plugin.getServer()),line.substring(1));
 					} else {		
 						// remove BRACKETS in dummy
-						String[] words;
+						int words;
 						if (line.contains("(") && line.contains(")")) {
 							String bracket = line.substring(line.indexOf("("), line.lastIndexOf(")")+1);
 							String dummy = line.replace(bracket, bracket.replaceAll(".", "X"));
-							words = dummy.split(" ");
+							words = dummy.split(" ").length;
 						} else
-							words = line.split(" ");
+							words = line.split(" ").length;
 						
 						// ONE WORD per line (brackets are ignored)
-						if (words.length > 1) {
+						if (words > 1) {
 							sendError(null, tooManyExpressions);
 						} else {
 							String expression;
 							
-							// WORD to EXPRESSION
+							// get EXPRESSION
 							if (line.contains("("))
 								expression = line.substring(0, line.indexOf("("));
 							else
@@ -504,7 +504,7 @@ public class SEinterpreter extends Thread {
 											}
 											
 											// ONLY RESOLVE RELEVANT PARTS, NOT IRRELEVANT BRACKETS
-											input = resolveInput(input);											
+											input = resolveInput(input);
 											
 											// WORLD ACTIONS
 											//==============
@@ -931,16 +931,11 @@ public class SEinterpreter extends Thread {
 		while (lauf.hasNext()) {
 			String temp = lauf.next();
 			if (result.contains(temp+"(")) {
-				temp = temp+result.substring(result.indexOf("(", result.indexOf("temp")), utils.findBracket(result,result.indexOf("(", result.indexOf("temp")))+1);
-				//utils.SElog(1, "function: " +temp); // debug
-				//utils.SElog(1, "result: " +result); // debug
+				
+				temp = temp+result.substring(result.indexOf("(", result.indexOf(temp)), utils.findBracket(result,result.indexOf("(", result.indexOf(temp)))+1);
 				result = result.replace(temp, executeLine(temp, functions));
-				//utils.SElog(1, "msg: " +msg); // debug
 			}
 		}
-		
-		// result = this.resolveVariables(result, entitySet); // not the best way
-		
 		return result;
 	}
 	
@@ -971,7 +966,7 @@ public class SEinterpreter extends Thread {
 	
 	public String[] resolveInput(String[] input) {
 		// input: [<myCuboid>],[changeBlockType(world,<blockLocation>,0)]
-		
+				
 		String[] result = input;
 		for (int i=0; i<result.length;i++) {
 			
