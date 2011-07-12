@@ -15,6 +15,7 @@ import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
 import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -307,13 +308,12 @@ public class SEinterpreter extends Thread {
 			tempStrings.add("<"+tempVar+">");
 		}
 		
-		//utils.SElog(1, tempStrings.toString()); // debug
-		//utils.SElog(1, tempIntegers.toString()); // debug
-		
 		variables.addAll(tempIntegers);
 		variables.addAll(tempStrings);
 		expressions.addAll(tempIntegers);
 		expressions.addAll(tempStrings);
+		
+		// SEutils.SElog(1, variables.toString()); // debug
 		
 		if(this.kind.equals(kindType.script))
 			executeScript();
@@ -743,13 +743,13 @@ public class SEinterpreter extends Thread {
 											*/
 											
 											// resolve user-defined String variables
-											Map<String,String> tempStrings = SEdata.getStringVarList();
+											Map<String,SEstring> tempStrings = SEdata.getStringVarList();
 											if (tempStrings != null) {
 												for ( Iterator<String> i = tempStrings.keySet().iterator(); i.hasNext(); ) {
 													String tempVar = (String) i.next();
 													// utils.SElog(1, expression+" = "+ "<"+tempVar+">"); // debug
 													if (expression.equals("<"+tempVar+">")) {
-														result = tempStrings.get(tempVar);
+														result = tempStrings.get(tempVar).getValue();
 													}
 												}
 											}
@@ -762,7 +762,7 @@ public class SEinterpreter extends Thread {
 													String tempVar = (String) i.next();
 													// utils.SElog(1, expression+" = "+ "<"+tempVar+">"); // debug
 													if (expression.equals("<"+tempVar+">")) {
-														SEutils.SElog(1, "value: "+tempIntegers.get(tempVar).getValue());
+														//SEutils.SElog(1, "value: "+tempIntegers.get(tempVar).getValue());
 														result = String.valueOf(tempIntegers.get(tempVar).getValue());
 													}
 												}
@@ -1159,7 +1159,7 @@ public class SEinterpreter extends Thread {
 			if (inputToInteger(name, input[2])!="null") {
 				World targetWorld = inputToWorld(name, input[0]);
 				Location targetLocation = inputToLocation(name, input[1]);
-				if (targetWorld!=null) {
+				if (targetWorld!=null && targetLocation!=null) {
 						targetWorld.getBlockAt(targetLocation).setTypeId(Integer.valueOf(inputToInteger(name, input[2])));	
 				}	
 			}

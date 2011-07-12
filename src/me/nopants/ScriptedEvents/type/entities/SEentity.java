@@ -8,6 +8,11 @@ public class SEentity implements Serializable {
 	String name;
 	String owner;
 	
+	public SEentity(String newName, String newOwner) {
+		this.setName(newName);
+		this.setOwner(newOwner);
+	}
+	
 	public String getName() {
 		return name;
 	}

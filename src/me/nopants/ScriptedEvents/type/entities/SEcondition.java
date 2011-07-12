@@ -13,8 +13,8 @@ public class SEcondition extends SEentity {
 	private File conditionFile;
 	
 	public SEcondition(File newFile, String newName, logicalOperator newOperator, Map<Integer, String> newConditionList) {
+		super(newName, null);
 		this.conditionList = newConditionList;
-		this.name = newName;
 		this.conditionFile = newFile;
 		this.operator = newOperator;
 	}

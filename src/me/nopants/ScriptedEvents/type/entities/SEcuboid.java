@@ -14,9 +14,9 @@ public class SEcuboid extends SEentity {
 
 	// constructor
 	public SEcuboid(String newWorld, String newName, Location newCuboidCorner1, Location newCuboidCorner2) {
+		super(newName, null);
 		this.setCorner(1, newCuboidCorner1);
 		this.setCorner(2, newCuboidCorner2);
-		this.name = newName;
 		this.world = newWorld;
 	}
 

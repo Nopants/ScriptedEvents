@@ -13,6 +13,7 @@ import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
 import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -1264,10 +1265,10 @@ public class SEcommander {
 						if (args[0].equalsIgnoreCase("string")) {
 							if (!plugin.SEdata.variableExists(args[1])) {
 								
-								Map<String,String> tempList = plugin.SEdata.getStringVarList();
+								Map<String,SEstring> tempList = plugin.SEdata.getStringVarList();
 								String value = args[2]; // plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 								
-								tempList.put(args[1], value);
+								tempList.put(args[1], new SEstring(args[1], senderName, value));
 								plugin.SEdata.setStringVarList(tempList);
 								plugin.SEdata.rewriteStringVarFile();
 								plugin.SEdata.refreshStringVarList();
@@ -1359,7 +1360,7 @@ public class SEcommander {
 	// se.variable.delete
 	public boolean variableDelete(CommandSender sender, String[] args) {
 		boolean result = false;
-		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
+		Map<String,SEstring> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
@@ -1425,7 +1426,7 @@ public class SEcommander {
 	// se.variable.edit
 	public boolean variableEdit(CommandSender sender, String[] args) {
 		boolean result = false;
-		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
+		Map<String,SEstring> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
@@ -1440,7 +1441,7 @@ public class SEcommander {
 					if (args[0].equalsIgnoreCase("string")) {
 						if (tempStringVarList.containsKey(args[1])) {
 							try {
-								tempStringVarList.put(args[1], args[2]);
+								tempStringVarList.put(args[1], new SEstring(args[1], senderName, args[2]));
 								plugin.SEdata.setStringVarList(tempStringVarList);
 								plugin.SEdata.rewriteStringVarFile();
 								plugin.SEdata.refreshStringVarList();
@@ -1560,7 +1561,7 @@ public class SEcommander {
 	// se.variable.edit
 	public boolean variableList(CommandSender sender, String[] args) {
 		boolean result = false;
-		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
+		Map<String,SEstring> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		

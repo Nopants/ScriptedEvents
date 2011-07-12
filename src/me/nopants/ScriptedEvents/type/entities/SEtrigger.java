@@ -14,7 +14,7 @@ public class SEtrigger extends SEentity {
 	private SEcondition triggerCondition;
 	
 	public SEtrigger(SEentitySet entitySet){
-		this.name = entitySet.name;
+		super(entitySet.name, null);
 		this.event = entitySet.triggerEvent;
 		this.triggerCuboid = entitySet.cuboid;
 		this.triggerCondition = entitySet.condition;

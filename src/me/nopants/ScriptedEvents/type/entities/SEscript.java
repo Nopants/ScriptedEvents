@@ -11,8 +11,8 @@ public class SEscript extends SEentity {
 	private File scriptFile;
 	
 	public SEscript(File newFile, String newName, Map<Integer, String> newActionList) {
+		super(newName, null);
 		this.actionList = newActionList;
-		this.name = newName;
 		this.scriptFile = newFile;
 	}
 		

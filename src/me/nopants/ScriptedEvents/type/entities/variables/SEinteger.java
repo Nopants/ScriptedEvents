@@ -1,6 +1,5 @@
 package me.nopants.ScriptedEvents.type.entities.variables;
 
-import me.nopants.ScriptedEvents.SEutils;
 import me.nopants.ScriptedEvents.type.entities.SEentity;
 
 public class SEinteger extends SEentity{
@@ -9,10 +8,8 @@ public class SEinteger extends SEentity{
 	int value;
 
 	public SEinteger(String newName, String newOwner, int newValue) {
-		this.setName(newName);
-		this.setOwner(newOwner);
+		super(newName, newOwner);
 		this.setValue(newValue);
-		SEutils.SElog(1, this.getName() +", "+ this.getOwner() +", "+ this.getValue());
 	}
 
 	public int getValue() {

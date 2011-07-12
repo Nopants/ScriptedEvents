@@ -21,6 +21,7 @@ import me.nopants.ScriptedEvents.type.entities.SEcuboid;
 import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -45,7 +46,7 @@ public class SEdataManager {
 	private Map<Integer, SEtrigger> triggerList = new HashMap<Integer, SEtrigger>();
 	private Map<Integer, SEcondition> conditionList = new HashMap<Integer, SEcondition>();
 	private Map<Integer, SEscript> scriptList = new HashMap<Integer, SEscript>();
-	private Map<String, String> stringVarList = new HashMap<String, String>();
+	private Map<String, SEstring> stringVarList = new HashMap<String, SEstring>();
 	private Map<String, SEinteger> intVarList = new HashMap<String, SEinteger>();
 	private Map<String,Set<String>> setVarList =  new HashMap<String, Set<String>>();
 	private Map<Player, Boolean> debugees = new HashMap<Player, Boolean>();
@@ -194,7 +195,7 @@ public class SEdataManager {
 	}
 	
 	// returns the stringVarList
-	public Map<String, String> getStringVarList() {
+	public Map<String, SEstring> getStringVarList() {
 		return this.stringVarList;
 	}
 	
@@ -259,7 +260,7 @@ public class SEdataManager {
 	}
 	
 	// sets the stringVarList
-	public void setStringVarList(Map<String, String> newStringVarList) {
+	public void setStringVarList(Map<String, SEstring> newStringVarList) {
 		this.stringVarList = newStringVarList;
 	}
 	
@@ -521,7 +522,7 @@ public class SEdataManager {
 				}
 			} else {
 				if (load(stringVarPath) instanceof Map<?,?>) {			
-					this.stringVarList = (Map<String,String>)load(stringVarPath);
+					this.stringVarList = (Map<String,SEstring>)load(stringVarPath);
 				}	
 			}
 		} catch (Exception ex) {
