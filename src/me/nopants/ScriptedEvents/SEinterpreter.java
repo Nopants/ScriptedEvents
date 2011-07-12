@@ -15,6 +15,7 @@ import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
 import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEset;
 import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.Effect;
@@ -849,8 +850,8 @@ public class SEinterpreter extends Thread {
 	}
 
 	// trys to turn an input String into a set-variable and can send an error
-	public Set<String> inputToSet(String expression, String input) {
-		Set<String> result = null;
+	public SEset inputToSet(String expression, String input) {
+		SEset result = null;
 		result = SEdata.getSetVarList().get(input); 
 		if (result == null)
 			sendError(expression, setNotFound);
@@ -1330,10 +1331,10 @@ public class SEinterpreter extends Thread {
 		String name = "doForSetItems";
 		if (checkInput(name, input.length == 2)) {
 			
-			Set<String> tempSet = inputToSet(name, input[0]);
+			SEset tempSet = inputToSet(name, input[0]);
 			String action = input[1];
 			
-			Iterator<String> lauf = tempSet.iterator();
+			Iterator<String> lauf = tempSet.getValues().iterator();
 			
 			while (lauf.hasNext()) {
 				entitySet.setItem = lauf.next();
@@ -1546,9 +1547,9 @@ public class SEinterpreter extends Thread {
 		String name = "size";
 		String result = "null";
 		if (checkInput(name, input.length == 1)) {
-			Set<String> targetSet = inputToSet(name, input[0]);
+			SEset targetSet = inputToSet(name, input[0]);
 			if (targetSet!= null)
-				result = String.valueOf(targetSet.size());
+				result = String.valueOf(targetSet.getValues().size());
 		}
 		return result;
 	}
@@ -1638,7 +1639,7 @@ public class SEinterpreter extends Thread {
 		String result = "null";
 		if (checkInput(name, input.length == 2)) {
 			if (inputToSet(name, input[0]) != null) {
-				result = String.valueOf(inputToSet(name, input[0]).contains(input[1]));
+				result = String.valueOf(inputToSet(name, input[0]).getValues().contains(input[1]));
 			}
 		}
 		return result;

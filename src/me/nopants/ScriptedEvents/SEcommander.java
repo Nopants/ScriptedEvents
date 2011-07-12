@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import me.nopants.ScriptedEvents.type.SEentitySet;
 import me.nopants.ScriptedEvents.type.entities.SEcondition;
@@ -13,6 +12,7 @@ import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
 import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEset;
 import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.command.CommandSender;
@@ -1324,9 +1324,9 @@ public class SEcommander {
 						if (args[0].equalsIgnoreCase("set")) {
 							if (!plugin.SEdata.variableExists(args[1])) {
 								
-								Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
+								Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 								
-								tempSetVarList.put(args[1], new HashSet<String>());
+								tempSetVarList.put(args[1], new SEset(args[1], senderName, new HashSet<String>()));
 								
 								plugin.SEdata.setSetVarList(tempSetVarList);
 								
@@ -1362,7 +1362,7 @@ public class SEcommander {
 		boolean result = false;
 		Map<String,SEstring> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
-		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
+		Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+deleteNode)){
@@ -1428,7 +1428,7 @@ public class SEcommander {
 		boolean result = false;
 		Map<String,SEstring> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
-		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
+		Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 		
 		String senderName = utils.getSenderName(sender);
 		Player player = utils.senderToPlayer(sender);
@@ -1504,22 +1504,22 @@ public class SEcommander {
 					if (args[0].equalsIgnoreCase("set")) {
 						if (tempSetVarList.containsKey(args[1])) {
 							try {
-								Set<String> tempSetVar = tempSetVarList.get(args[1]);
+								SEset tempSetVar = tempSetVarList.get(args[1]);
 								if ((args[2].equalsIgnoreCase("remove")) || (args[2].equalsIgnoreCase("add")) || (args[2].equalsIgnoreCase("onlinePlayers"))) {
 									if (args.length == 4) {
-										if ((args[2].equalsIgnoreCase("remove")) && tempSetVar.contains(args[3])) {
-											tempSetVar.remove(args[3]);
+										if ((args[2].equalsIgnoreCase("remove")) && tempSetVar.getValues().contains(args[3])) {
+											tempSetVar.getValues().remove(args[3]);
 										}
 										if (args[2].equalsIgnoreCase("add")) {
-											tempSetVar.add(args[3]);
+											tempSetVar.getValues().add(args[3]);
 										}
 									}
 									if (args.length == 3) {
 										if (args[2].equalsIgnoreCase("onlinePlayers")) {
-											tempSetVar.clear();
+											tempSetVar.getValues().clear();
 											Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
 											for (int i=0; i < plugin.getServer().getOnlinePlayers().length; i++) {
-												tempSetVar.add(onlinePlayers[i].getName());
+												tempSetVar.getValues().add(onlinePlayers[i].getName());
 											}
 										}
 									}
@@ -1563,7 +1563,7 @@ public class SEcommander {
 		boolean result = false;
 		Map<String,SEstring> tempStringVarList = plugin.SEdata.getStringVarList();
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
-		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
+		Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+listNode)){

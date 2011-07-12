@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 
 import me.nopants.ScriptedEvents.type.SEentitySet;
 import me.nopants.ScriptedEvents.type.entities.SEcondition;
@@ -21,6 +20,7 @@ import me.nopants.ScriptedEvents.type.entities.SEcuboid;
 import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEset;
 import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.command.CommandSender;
@@ -48,7 +48,7 @@ public class SEdataManager {
 	private Map<Integer, SEscript> scriptList = new HashMap<Integer, SEscript>();
 	private Map<String, SEstring> stringVarList = new HashMap<String, SEstring>();
 	private Map<String, SEinteger> intVarList = new HashMap<String, SEinteger>();
-	private Map<String,Set<String>> setVarList =  new HashMap<String, Set<String>>();
+	private Map<String,SEset> setVarList =  new HashMap<String, SEset>();
 	private Map<Player, Boolean> debugees = new HashMap<Player, Boolean>();
 	private int TriggerItem = 0;
 	private static int operatorLine = 1;
@@ -185,7 +185,7 @@ public class SEdataManager {
 	//---------------------//
 
 	// returns the setVarList
-	public Map<String,Set<String>> getSetVarList() {
+	public Map<String,SEset> getSetVarList() {
 		return this.setVarList;
 	}
 	
@@ -255,7 +255,7 @@ public class SEdataManager {
 	}
 
 	// sets the listVarList
-	public void setSetVarList(Map<String,Set<String>> newSetVarList) {
+	public void setSetVarList(Map<String,SEset> newSetVarList) {
 		this.setVarList = newSetVarList;
 	}
 	
@@ -493,18 +493,25 @@ public class SEdataManager {
 	}
  	
  	// does a refresh on the list of cuboids
- 	public void refreshSetVarList() {
+	public void refreshSetVarList() {
      	// get all files in scriptDirectory which end on .script
 		File dir = new File(setDirectory);
-		File[] setFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".dat" );} } );
+		File[] setFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".set" );} } );
 		
 		// loop over all .dat-files
 		for(int i = 0; i < setFileList.length; i++) {
 			// save the script into scriptList
 			String tempName = setFileList[i].getName();
-			tempName = tempName.substring(0, tempName.indexOf(".dat"));
+			tempName = tempName.substring(0, tempName.indexOf(".set"));
 			
-			setVarList.put(tempName, utils.mapToSet(read(setFileList[i])));
+			try {
+				if (load(SEdataManager.setDirectory + File.separator + tempName + ".set") instanceof SEset) {
+					SEset tempSet = (SEset) load(SEdataManager.setDirectory + File.separator + tempName + ".set");
+					this.setVarList.put(tempName, tempSet);
+				}
+			} catch (Exception e) {
+				SEutils.SElog(3, "Failed to load "+tempName+".set!");
+			}
 		}
 	}
  	
@@ -523,7 +530,7 @@ public class SEdataManager {
 			} else {
 				if (load(stringVarPath) instanceof Map<?,?>) {			
 					this.stringVarList = (Map<String,SEstring>)load(stringVarPath);
-				}	
+				}
 			}
 		} catch (Exception ex) {
 			SEutils.SElog(3, "Failed to load string-variables from file!");
@@ -750,20 +757,14 @@ public class SEdataManager {
 	
 	// writes a SetVarFile into a .dat-file
 	public void rewriteSetVarFile(String setName) {
-		Set<String> tempSetVar = this.setVarList.get(setName);
-		File tempSetFile = new File(SEdataManager.setDirectory + File.separator + setName + ".dat");
+		SEset tempSetVar = this.setVarList.get(setName);
+		File tempSetFile = new File(SEdataManager.setDirectory + File.separator + setName + ".set");
 		
 		try {
 			tempSetFile.delete();
-			tempSetFile.createNewFile();
-		} catch (IOException e) {
-			SEutils.SElog(3, "Couldn't rewrite "+setName+".dat!");
-		}				
-		
-		Iterator<String> lauf = tempSetVar.iterator();
-		
-		while (lauf.hasNext()) {
-			write(tempSetFile, lauf.next());
+			save(tempSetVar, SEdataManager.setDirectory + File.separator + setName + ".set");
+		} catch (Exception e) {
+			SEutils.SElog(3, "Couldn't rewrite "+setName+".set!");
 		}
 	}
 	
