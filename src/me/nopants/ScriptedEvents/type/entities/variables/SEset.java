@@ -2,9 +2,7 @@ package me.nopants.ScriptedEvents.type.entities.variables;
 
 import java.util.Set;
 
-import me.nopants.ScriptedEvents.type.entities.SEentity;
-
-public class SEset extends SEentity{
+public class SEset extends SEvariable{
 	private static final long serialVersionUID = 1L;
 
 	Set<String> values;

@@ -39,7 +39,6 @@ public class SEcommander {
 	private static String listNode = ".list";
 	private static String createNode = ".variable";
 	private static String deleteNode = ".variable";
-	private static String getIDNode = ".getid";
 	private static String addNode = ".add";
 	private static String nameNode = ".name";
 	private static String eventNode = ".event";
@@ -383,7 +382,7 @@ public class SEcommander {
 						// onEnter and onLeave
 						if ((triggerEvent==SEtrigger.triggerEvent.onEnter)||(triggerEvent==SEtrigger.triggerEvent.onLeave)) {
 							try {
-								SEcuboid cuboid = plugin.SEdata.getCuboidByID(plugin.SEdata.searchCuboidList(args[0]));
+								SEcuboid cuboid = plugin.SEdata.getCuboidList().get(args[0]);
 								if (cuboid!=null) {
 									editEntity.trigger.setTriggerCuboid(cuboid);
 									utils.SEmessage(sender, "Cuboid changed");
@@ -432,7 +431,7 @@ public class SEcommander {
 				if (args.length == 1) {
 					try {
 						
-						SEscript tempScript = plugin.SEdata.getScriptByID(plugin.SEdata.searchScriptList(args[0]));
+						SEscript tempScript = plugin.SEdata.getScriptList().get(args[0]);
 						if (tempScript != null) {
 							// change trigger-script
 							if (editEntity.trigger != null) {
@@ -473,7 +472,7 @@ public class SEcommander {
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if (args.length == 1) {
 					try {
-						SEcondition tempCondition = plugin.SEdata.getConditionByID(plugin.SEdata.searchConditionList(args[0]));
+						SEcondition tempCondition = plugin.SEdata.getConditionList().get(args[0]);
 						if (tempCondition != null) {
 							// change trigger-condition
 							if (editEntity.trigger != null) {
@@ -583,8 +582,8 @@ public class SEcommander {
 				// save condition
 				SEcondition editCondition = editEntity.condition;
 				if (editCondition != null) {
-					Map<Integer, SEcondition> conList = plugin.SEdata.getConditionList();
-					conList.put(conList.size()+1, editCondition);
+					Map<String, SEcondition> conList = plugin.SEdata.getConditionList();
+					conList.put(editCondition.getName(), editCondition);
 					plugin.SEdata.setConditionList(conList);
 					plugin.SEdata.rewriteCondition(plugin.SEdata.getConditionList().get(conList.size()));
 					utils.SEmessage(sender, "Edited Condition saved!");
@@ -594,10 +593,10 @@ public class SEcommander {
 				// save script
 				SEscript editScript = editEntity.script;
 				if (editScript != null) {
-					Map<Integer, SEscript> scriptList = plugin.SEdata.getScriptList();
-					scriptList.put(scriptList.size()+1, editScript);
+					Map<String, SEscript> scriptList = plugin.SEdata.getScriptList();
+					scriptList.put(editScript.getName(), editScript);
 					plugin.SEdata.setScriptList(scriptList);
-					plugin.SEdata.rewriteScript(plugin.SEdata.getScriptList().get(scriptList.size()));
+					plugin.SEdata.rewriteScript(plugin.SEdata.getScriptList().get(editScript.getName()));
 					utils.SEmessage(sender, "Edited Script saved!");
 					result = true;
 				}
@@ -605,8 +604,8 @@ public class SEcommander {
 				// save trigger
 				SEtrigger editTrigger = editEntity.trigger;
 				if (editTrigger != null) {
-					Map<Integer, SEtrigger> triggerList = plugin.SEdata.getTriggerList();
-					triggerList.put(triggerList.size()+1, editTrigger);
+					Map<String, SEtrigger> triggerList = plugin.SEdata.getTriggerList();
+					triggerList.put(editTrigger.getName(), editTrigger);
 					plugin.SEdata.setTriggerList(triggerList);
 					plugin.SEdata.rewriteTriggerFile();
 					utils.SEmessage(sender, "Edited Trigger saved!");
@@ -616,8 +615,8 @@ public class SEcommander {
 				// save cuboid
 				SEcuboid editCuboid = editEntity.cuboid;
 				if (editCuboid != null) {
-					Map<Integer, SEcuboid> cuboidList = plugin.SEdata.getCuboidList();
-					cuboidList.put(cuboidList.size()+1, editCuboid);
+					Map<String, SEcuboid> cuboidList = plugin.SEdata.getCuboidList();
+					cuboidList.put(editCuboid.getName(), editCuboid);
 					plugin.SEdata.setCuboidList(cuboidList);
 					plugin.SEdata.rewriteCuboidFile();
 					utils.SEmessage(sender, "Edited Cuboid saved!");
@@ -649,12 +648,12 @@ public class SEcommander {
 		if(checkPermission(player, seNode+cuboidNode+createNode)){
 			if (args.length == 1) {
 				if (player!=null) {
-					if (plugin.SEdata.searchCuboidList(args[0])<0) {
+					if (!plugin.SEdata.getCuboidList().containsKey(args[0])) {
 						if ((plugin.playerListener.getVertex1(player)!=null)&&(plugin.playerListener.getVertex2(player)!=null)) {
 							SEcuboid saveCuboid = new SEcuboid(player.getWorld().getName(), args[0], plugin.playerListener.getVertex1(player), plugin.playerListener.getVertex2(player));
 							plugin.SEdata.writeCuboid(saveCuboid.toString());
 							utils.SEmessage(player, "Cuboid '"+args[0]+"' created!");
-							plugin.SEdata.refreshCuboidList();
+							plugin.SEdata.refreshMainCuboidList();
 							//check new distance
 							plugin.playerListener.resetDist(player);
 							result = true;	
@@ -683,25 +682,16 @@ public class SEcommander {
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+cuboidNode+deleteNode)){
-			Map<Integer, SEcuboid> cuboidList = new HashMap<Integer, SEcuboid>();
+			Map<String, SEcuboid> cuboidList = new HashMap<String, SEcuboid>();
 			cuboidList = plugin.SEdata.getCuboidList();
-			boolean intArgs = false;
-			int arg = 0;
-			try {
-				arg = Integer.valueOf(args[0]);
-				intArgs = true;
-			} catch (Exception e) {
-				intArgs = false;
-			}
 			
-			if (intArgs) {
-				if ((arg <= cuboidList.size())&&(arg > 0)) {
-					cuboidList.remove(Integer.valueOf(args[0]));
+				if (cuboidList.containsKey(args[0])) {
+					cuboidList.remove(args[0]);
 					plugin.SEdata.setCuboidList(cuboidList);
 					try {
 						utils.SEmessage(sender, "Cuboid deleted!");
 						plugin.SEdata.rewriteCuboidFile();
-						plugin.SEdata.refreshCuboidList();
+						plugin.SEdata.refreshMainCuboidList();
 						result = true;
 					}
 					catch (Exception e){
@@ -712,10 +702,6 @@ public class SEcommander {
 					plugin.SEdata.utils.SEmessage(sender, "Cuboid ID not found!");
 					result = false;
 				}	
-			} else {
-				plugin.SEdata.utils.SEmessage(sender, "Cuboid ID has to be an Integer!");
-				result = false;
-			}	
 		} else result = true;
 		
 		return result;
@@ -729,61 +715,30 @@ public class SEcommander {
 		if(checkPermission(player, seNode+cuboidNode+editNode)){
 			if (args.length == 1) {
 				
-				Map<Integer, SEcuboid> cuboidList = new HashMap<Integer, SEcuboid>();
+				Map<String, SEcuboid> cuboidList = new HashMap<String, SEcuboid>();
 				cuboidList = plugin.SEdata.getCuboidList();
-				boolean intArgs = false;
-				int arg = 0;
 				
-				try {
-					arg = Integer.valueOf(args[0]);
-					intArgs = true;
-				} catch (Exception e) {
-					intArgs = false;
-				}
 				
-				if (intArgs) {
-					if ((arg <= cuboidList.size())&&(arg > 0)) {
-						
+				if (cuboidList.containsKey(args[0])) {
+								
 						// Turn on Edit-Mode via entering an edit-entity
+						SEcuboid tempCuboid = cuboidList.get(args[0]);
+						
 						Map<CommandSender, SEentitySet> tempList = plugin.SEdata.getEditEntityList();
-						tempList.put(sender, new SEentitySet(plugin.SEdata.getCuboidByID(arg)));
+						tempList.put(sender, new SEentitySet(tempCuboid));
 						plugin.SEdata.setEditEntityList(tempList);
-						utils.SEmessage(sender, "Edit-Mode enabled for Cuboid '"+plugin.SEdata.getCuboidByID(arg).getName()+"'");
+						
+						utils.SEmessage(sender, "Edit-Mode enabled for Cuboid '"+tempCuboid.getName()+"'");
 						result = true;
 						
-					} else {
-						utils.SEmessage(sender, "Cuboid '"+args[0]+"' not found!");
-						result = false;
-					}
 				} else {
-					utils.SEmessage(sender, "Cuboid ID has to be an Integer!");
+					utils.SEmessage(sender, "Cuboid '"+args[0]+"' not found!");
 					result = false;
 				}
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
 				result = false;
 			}
-		} else result = true;
-		
-		return result;
-	}
-
-	// se.cuboid.getID
-	public boolean cuboidGetID(CommandSender sender, String[] args) {
-		boolean result = false;
-		
-		Player player = utils.senderToPlayer(sender);
-		if(checkPermission(player, seNode+cuboidNode+getIDNode)){
-			if (args.length == 1) {
-				int searchResult = plugin.SEdata.searchCuboidList(args[0]);
-				if (searchResult > 0) {
-					utils.SEmessage(sender, "CuboidID of cuboid '"+args[0]+"' is '"+searchResult+"'!");
-					result = true;
-				} else {
-					utils.SEmessage(sender, "Cuboid '"+args[0]+"' not found!");
-					result = false;
-				}
-			}	
 		} else result = true;
 		
 		return result;
@@ -800,7 +755,7 @@ public class SEcommander {
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+createNode)){
 			if (args.length == 1) {
-				if (plugin.SEdata.searchTriggerList(args[0])<0) {
+				if (!plugin.SEdata.getTriggerList().containsKey(args[0])) {
 					//int triggerCount = plugin.SEdata.getTriggerList().size()+1;
 					// create a blank trigger with 'name' and 'ID'
 					SEentitySet entitySet = new SEentitySet();
@@ -809,7 +764,7 @@ public class SEcommander {
 				
 					// and update it to the dataManager and trigger.yml
 					plugin.SEdata.writeTrigger(newTrigger.toString());
-					plugin.SEdata.refreshTriggerList();
+					plugin.SEdata.refreshMainTriggerList();
 					plugin.SEdata.utils.SEmessage(sender, "Trigger '"+args[0]+"' created!");
 					result = true;
 				} else {
@@ -832,25 +787,16 @@ public class SEcommander {
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+deleteNode)){
-			Map<Integer, SEtrigger> triggerList = new HashMap<Integer, SEtrigger>();
+			Map<String, SEtrigger> triggerList = new HashMap<String, SEtrigger>();
 			triggerList = plugin.SEdata.getTriggerList();
-			boolean intArgs = false;
-			int arg = 0;
-			try {
-				arg = Integer.valueOf(args[0]);
-				intArgs = true;
-			} catch (Exception e) {
-				intArgs = false;
-			}
 			
-			if (intArgs) {
-				if ((arg <= triggerList.size())&&(arg > 0)) {
-					triggerList.remove(Integer.valueOf(args[0]));
+				if (triggerList.containsKey(args[0])) {
+					triggerList.remove(args[0]);
 					plugin.SEdata.setTriggerList(triggerList);
 					try {
 						utils.SEmessage(sender, "Trigger deleted!");
 						plugin.SEdata.rewriteTriggerFile();
-						plugin.SEdata.refreshTriggerList();
+						plugin.SEdata.refreshMainTriggerList();
 						result = true;
 					}
 					catch (Exception e){
@@ -858,13 +804,9 @@ public class SEcommander {
 						result = false;				
 					}
 				} else {
-					utils.SEmessage(sender, "Trigger ID not found!");
+					utils.SEmessage(sender, "Trigger not found!");
 					result = false;
-				}	
-			} else {
-				utils.SEmessage(sender, "Trigger ID has to be an Integer!");
-				result = false;
-			}	
+				}
 		} else result = true;
 		
 		return result;
@@ -878,36 +820,22 @@ public class SEcommander {
 		if(checkPermission(player, seNode+triggerNode+editNode)){
 			if (args.length == 1) {
 				
-				Map<Integer, SEtrigger> triggerList = new HashMap<Integer, SEtrigger>();
+				Map<String, SEtrigger> triggerList = new HashMap<String, SEtrigger>();
 				triggerList = plugin.SEdata.getTriggerList();
-				boolean intArgs = false;
-				int arg = 0;
 				
-				try {
-					arg = Integer.valueOf(args[0]);
-					intArgs = true;
-				} catch (Exception e) {
-					intArgs = false;
-				}
-				
-				if (intArgs) {
-					if ((arg <= triggerList.size())&&(arg > 0)) {
+					if (triggerList.containsKey(args[0])) {
 						
 						// Turn on Edit-Mode via entering an edit-entity
 						Map<CommandSender, SEentitySet> tempList = plugin.SEdata.getEditEntityList();
-						tempList.put(sender, new SEentitySet(plugin.SEdata.getTriggerByID(arg)));
+						tempList.put(sender, new SEentitySet(triggerList.get(args[0])));
 						plugin.SEdata.setEditEntityList(tempList);
-						utils.SEmessage(sender, "Edit-Mode enabled for Trigger '"+plugin.SEdata.getTriggerByID(arg).getName()+"'");
+						utils.SEmessage(sender, "Edit-Mode enabled for Trigger '"+triggerList.get(args[0]).getName()+"'");
 						result = true;
 						
 					} else {
 						utils.SEmessage(sender, "Trigger '"+args[0]+"' not found!");
 						result = false;
 					}
-				} else {
-					utils.SEmessage(sender, "Trigger ID has to be an Integer!");
-					result = false;
-				}
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
 				result = false;
@@ -916,28 +844,7 @@ public class SEcommander {
 		
 		return result;
 	}
-	
-	// se.trigger.getID
-	public boolean triggerGetID(CommandSender sender, String[] args) {
-		boolean result = false;
-	
-		Player player = utils.senderToPlayer(sender);
-		if(checkPermission(player, seNode+triggerNode+getIDNode)){
-			if (args.length == 1) {
-				int searchResult = plugin.SEdata.searchTriggerList(args[0]);
-				if (searchResult > 0) {
-					utils.SEmessage(sender, "TriggerID of trigger '"+args[0]+"' is '"+searchResult+"'!");
-					result = true;
-				} else {
-					utils.SEmessage(sender, "Trigger '"+args[0]+"' not found!");
-					result = false;
-				}
-			}	
-		} else result = true;
 		
-		return result;
-	}
-	
 	//---------------------//
 	// SCRIPT
 	//---------------------//
@@ -949,7 +856,7 @@ public class SEcommander {
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+createNode)){
 			if (args.length == 1) {
-				if (plugin.SEdata.searchScriptList(args[0])<0) {
+				if (!plugin.SEdata.getScriptList().containsKey(args[0])) {
 															
 					File newScriptFile = new File(SEdataManager.scriptDirectory + File.separator + args[0] + ".script");
 					SEscript newScript = new SEscript(newScriptFile, args[0], new HashMap<Integer, String>());
@@ -983,21 +890,12 @@ public class SEcommander {
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+deleteNode)){
-			boolean intArgs = false;
-			int arg = 0;
-			try {
-				arg = Integer.valueOf(args[0]);
-				intArgs = true;
-			} catch (Exception e) {
-				intArgs = false;
-			}
 			
-			if (intArgs) {
-				if ((arg <= plugin.SEdata.getScriptList().size())&&(arg > 0)) {
+				if (plugin.SEdata.getScriptList().containsKey(args[0])) {
 					try {
 					
-						plugin.SEdata.getScriptByID(arg).getScriptFile().delete();
-						plugin.SEdata.getScriptList().remove(arg);
+						plugin.SEdata.getScriptList().get(args[0]).getScriptFile().delete();
+						plugin.SEdata.getScriptList().remove(args[0]);
 						plugin.SEdata.rewriteAllScriptFiles();
 						plugin.SEdata.refreshScriptList();
 						
@@ -1009,13 +907,9 @@ public class SEcommander {
 						result = false;				
 					}
 				} else {
-					utils.SEmessage(sender, "Script ID not found!");
+					utils.SEmessage(sender, "Script not found!");
 					result = false;
-				}	
-			} else {
-				utils.SEmessage(sender, "Script ID has to be an Integer!");
-				result = false;
-			}			
+				}			
 		} else result = true;
 		
 		return result;
@@ -1029,62 +923,27 @@ public class SEcommander {
 		if(checkPermission(player, seNode+scriptNode+editNode)){
 			if (args.length == 1) {
 				
-				Map<Integer, SEscript> scriptList = new HashMap<Integer, SEscript>();
+				Map<String, SEscript> scriptList = new HashMap<String, SEscript>();
 				scriptList = plugin.SEdata.getScriptList();
-				boolean intArgs = false;
-				int arg = 0;
 				
-				try {
-					arg = Integer.valueOf(args[0]);
-					intArgs = true;
-				} catch (Exception e) {
-					intArgs = false;
-				}
-				
-				if (intArgs) {
-					if ((arg <= scriptList.size())&&(arg > 0)) {
+					if (scriptList.containsKey(args[0])) {
 						
 						// Turn on Edit-Mode via entering an edit-entity
 						Map<CommandSender, SEentitySet> tempList = plugin.SEdata.getEditEntityList();
-						tempList.put(sender, new SEentitySet(plugin.SEdata.getScriptByID(arg)));
+						tempList.put(sender, new SEentitySet(plugin.SEdata.getScriptList().get(args[0])));
 						plugin.SEdata.setEditEntityList(tempList);
-						utils.SEmessage(sender, "Edit-Mode enabled for Script '"+plugin.SEdata.getScriptByID(arg).getName()+"'");
+						utils.SEmessage(sender, "Edit-Mode enabled for Script '"+plugin.SEdata.getScriptList().get(args[0]).getName()+"'");
 						result = true;
 						
 					} else {
 						utils.SEmessage(sender, "Script '"+args[0]+"' not found!");
 						result = false;
 					}
-				} else {
-					utils.SEmessage(sender, "Script ID has to be an Integer!");
-					result = false;
-				}
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
 				result = false;
 			}	
 		} else result = true;
-		return result;
-	}
-	
-	// se.script.getID
-	public boolean scriptGetID(CommandSender sender, String[] args) {
-		boolean result = false;
-		
-		Player player = utils.senderToPlayer(sender);
-		if(checkPermission(player, seNode+scriptNode+getIDNode)){
-			if (args.length == 1) {
-				int searchResult = plugin.SEdata.searchScriptList(args[0]);
-				if (searchResult > 0) {
-					utils.SEmessage(sender, "ScriptID of script '"+args[0]+"' is '"+searchResult+"'!");
-					result = true;
-				} else {
-					utils.SEmessage(sender, "Script '"+args[0]+"' not found!");
-					result = false;
-				}
-			}	
-		} else result = true;
-		
 		return result;
 	}
 	
@@ -1099,7 +958,7 @@ public class SEcommander {
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+createNode)){
 			if (args.length == 1) {
-				if (plugin.SEdata.searchConditionList(args[0])<0) {
+				if (!plugin.SEdata.getConditionList().containsKey(args[0])) {
 															
 					File newConditionFile = new File(SEdataManager.conditionDirectory + File.separator + args[0] + ".condition");
 					SEcondition newCondition = new SEcondition(newConditionFile, args[0], logicalOperator.and, new HashMap<Integer, String>());
@@ -1133,21 +992,11 @@ public class SEcommander {
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+deleteNode)){
-			boolean intArgs = false;
-			int arg = 0;
-			try {
-				arg = Integer.valueOf(args[0]);
-				intArgs = true;
-			} catch (Exception e) {
-				intArgs = false;
-			}
 			
-			if (intArgs) {
-				if ((arg <= plugin.SEdata.getConditionList().size())&&(arg > 0)) {
+				if (plugin.SEdata.getConditionList().containsKey(args[0])) {
 					try {
-					
-						plugin.SEdata.getConditionByID(arg).getConditionFile().delete();
-						plugin.SEdata.getConditionList().remove(arg);
+						plugin.SEdata.getConditionList().get(args[0]).getConditionFile().delete();
+						plugin.SEdata.getConditionList().remove(args[0]);
 						plugin.SEdata.rewriteAllConditionFiles();
 						plugin.SEdata.refreshConditionList();
 						
@@ -1159,13 +1008,9 @@ public class SEcommander {
 						result = false;				
 					}
 				} else {
-					utils.SEmessage(sender, "Condition ID not found!");
+					utils.SEmessage(sender, "Condition not found!");
 					result = false;
 				}	
-			} else {
-				utils.SEmessage(sender, "Condition ID has to be an Integer!");
-				result = false;
-			}	
 		} else result = true;
 		
 		return result;
@@ -1179,65 +1024,28 @@ public class SEcommander {
 		if(checkPermission(player, seNode+conditionNode+editNode)){
 			if (args.length == 1) {
 				
-				Map<Integer, SEcondition> conList = new HashMap<Integer, SEcondition>();
+				Map<String, SEcondition> conList = new HashMap<String, SEcondition>();
 				conList = plugin.SEdata.getConditionList();
-				boolean intArgs = false;
-				int arg = 0;
 				
-				try {
-					arg = Integer.valueOf(args[0]);
-					intArgs = true;
-				} catch (Exception e) {
-					intArgs = false;
-				}
-				
-				if (intArgs) {
-					if ((arg <= conList.size())&&(arg > 0)) {
+					if (conList.containsKey(args[0])) {
 						
 						// Turn on Edit-Mode via entering an edit-entity
 						Map<CommandSender, SEentitySet> tempList = plugin.SEdata.getEditEntityList();
-						tempList.put(sender, new SEentitySet(plugin.SEdata.getConditionByID(arg)));
+						tempList.put(sender, new SEentitySet(conList.get(args[0])));
 						plugin.SEdata.setEditEntityList(tempList);
 						
-						utils.SEmessage(sender, "Edit-Mode enabled for Condition '"+plugin.SEdata.getConditionByID(arg).getName()+"'");
+						utils.SEmessage(sender, "Edit-Mode enabled for Condition '"+conList.get(args[0]).getName()+"'");
 						result = true;
 						
 					} else {
 						utils.SEmessage(sender, "Condition '"+args[0]+"' not found!");
 						result = false;
 					}
-				} else {
-					utils.SEmessage(sender, "Condition ID has to be an Integer!");
-					result = false;
-				}
 			} else {
 				utils.SEmessage(sender, "Wrong number of arguments! Try again.");
 				result = false;
 			}	
 		} else result = true;
-		
-		return result;
-	}
-	
-	// se.condition.getID
-	public boolean conditionGetID(CommandSender sender, String[] args) {
-		boolean result = false;
-		
-		Player player = utils.senderToPlayer(sender);
-		if(checkPermission(player, seNode+conditionNode+getIDNode)){
-			if (args.length == 1) {
-				int searchResult = plugin.SEdata.searchConditionList(args[0]);
-				if (searchResult > 0) {
-					utils.SEmessage(sender, "ConditionID of condition '"+args[0]+"' is '"+searchResult+"'!");
-					result = true;
-				} else {
-					utils.SEmessage(sender, "Condition '"+args[0]+"' not found!");
-					result = false;
-				}
-			}	
-		} else result = true;
-		
-		
 		
 		return result;
 	}

@@ -834,7 +834,7 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a cuboid and can send an error
 	public SEcuboid inputToCuboid(String expression, String input) {
 		SEcuboid result = null;
-		result = SEdata.getCuboidByID(SEdata.searchCuboidList(input));
+		result = SEdata.getCuboidList().get(input);
 		if (result == null)
 			sendError(expression, cuboidNotFound);
 		return result;
@@ -843,7 +843,7 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a trigger and can send an error
 	public SEtrigger inputToTrigger(String expression, String input) {
 		SEtrigger result = null;
-		result = SEdata.getTriggerByID(SEdata.searchTriggerList(input));
+		result = SEdata.getTriggerList().get(input);
 		if (result == null)
 			sendError(expression, triggerNotFound);
 		return result;
@@ -861,7 +861,7 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a script and can send an error
 	public SEscript inputToScript(String expression, String input) {
 		SEscript result = null;
-		result = SEdata.getScriptByID(SEdata.searchScriptList(input));
+		result = SEdata.getScriptList().get(input);
 		if (result == null)
 			sendError(expression, scriptNotFound);
 		return result;
@@ -870,7 +870,7 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a condition and can send an error
 	public SEcondition inputToCondition(String expression, String input) {
 		SEcondition result = null;
-		result = SEdata.getConditionByID(SEdata.searchConditionList(input));
+		result = SEdata.getConditionList().get(input);
 		if (result == null)
 			sendError(expression, conditionNotFound);
 		return result;

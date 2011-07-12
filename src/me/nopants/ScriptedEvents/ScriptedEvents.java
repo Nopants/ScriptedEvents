@@ -178,9 +178,11 @@ public class ScriptedEvents extends JavaPlugin {
 							if ((commandParts[2].equalsIgnoreCase("edit"))||(commandParts[2].equalsIgnoreCase("e")))
 								result = commander.cuboidEdit(sender, args);
 							
+							/*
 							// /SE.cuboid.getID
 							if ((commandParts[2].equalsIgnoreCase("getID"))||(commandParts[2].equalsIgnoreCase("id")))
 								result = commander.cuboidGetID(sender, args);
+							*/
 							
 							//
 							// -------------------------------------------------------------------//
@@ -204,10 +206,6 @@ public class ScriptedEvents extends JavaPlugin {
 							if ((commandParts[2].equalsIgnoreCase("edit"))||(commandParts[2].equalsIgnoreCase("e")))
 								result = commander.triggerEdit(sender, args);
 							
-							// /SE.trigger.getID
-							if ((commandParts[2].equalsIgnoreCase("getID"))||(commandParts[2].equalsIgnoreCase("id")))
-								result = commander.triggerGetID(sender, args);
-							
 							//
 							// -------------------------------------------------------------------//
 							
@@ -230,10 +228,6 @@ public class ScriptedEvents extends JavaPlugin {
 							if ((commandParts[2].equalsIgnoreCase("edit"))||(commandParts[2].equalsIgnoreCase("e")))
 								result = commander.scriptEdit(sender, args);
 							
-							// /SE.script.getID
-							if ((commandParts[2].equalsIgnoreCase("getID"))||(commandParts[2].equalsIgnoreCase("id")))
-								result = commander.scriptGetID(sender, args);
-							
 							//
 							// -------------------------------------------------------------------//
 						}
@@ -254,10 +248,6 @@ public class ScriptedEvents extends JavaPlugin {
 							// /SE.condition.edit
 							if ((commandParts[2].equalsIgnoreCase("edit"))||(commandParts[2].equalsIgnoreCase("e")))
 								result = commander.conditionEdit(sender, args);
-							
-							// /SE.condition.getID
-							if ((commandParts[2].equalsIgnoreCase("getID"))||(commandParts[2].equalsIgnoreCase("id")))
-								result = commander.conditionGetID(sender, args);
 							
 							//
 							// -------------------------------------------------------------------//

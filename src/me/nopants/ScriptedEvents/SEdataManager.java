@@ -1,6 +1,7 @@
 package me.nopants.ScriptedEvents;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -30,6 +31,7 @@ import org.bukkit.util.config.Configuration;
 public class SEdataManager {
 
 	static String mainDirectory = "plugins/ScriptedEvents";
+	static String packageDirectory = mainDirectory+"/packages";
 	static String conditionDirectory = mainDirectory+"/conditions";
 	static String scriptDirectory = mainDirectory+"/scripts";
 	static String variableDirectory = mainDirectory+"/variables";
@@ -42,10 +44,11 @@ public class SEdataManager {
 	static File stringVarFile = new File(stringVarPath);
 	static File intVarFile = new File(intVarPath);
 	private Map<CommandSender, SEentitySet> editEntityList = new HashMap<CommandSender, SEentitySet>();
-	private Map<Integer, SEcuboid> cuboidList = new HashMap<Integer, SEcuboid>();
-	private Map<Integer, SEtrigger> triggerList = new HashMap<Integer, SEtrigger>();
-	private Map<Integer, SEcondition> conditionList = new HashMap<Integer, SEcondition>();
-	private Map<Integer, SEscript> scriptList = new HashMap<Integer, SEscript>();
+	private Map<String,String> packages = new HashMap<String,String>();
+	private Map<String, SEcuboid> cuboidList = new HashMap<String, SEcuboid>();
+	private Map<String, SEtrigger> triggerList = new HashMap<String, SEtrigger>();
+	private Map<String, SEcondition> conditionList = new HashMap<String, SEcondition>();
+	private Map<String, SEscript> scriptList = new HashMap<String, SEscript>();
 	private Map<String, SEstring> stringVarList = new HashMap<String, SEstring>();
 	private Map<String, SEinteger> intVarList = new HashMap<String, SEinteger>();
 	private Map<String,SEset> setVarList =  new HashMap<String, SEset>();
@@ -62,6 +65,7 @@ public class SEdataManager {
 	public void initializeData() {
 		// load file or create it
 		new File(mainDirectory).mkdir();
+		new File(packageDirectory).mkdir();
 		new File(conditionDirectory).mkdir();
 		new File(scriptDirectory).mkdir();
 		new File(variableDirectory).mkdir();
@@ -95,10 +99,11 @@ public class SEdataManager {
 		}
 		
 		refreshConfig();
-		refreshCuboidList();
+		refreshPackages();
+		refreshMainCuboidList();
 		refreshConditionList();
 		refreshScriptList();
-		refreshTriggerList();
+		refreshMainTriggerList();
 		refreshStringVarList();
 		refreshIntVarList();
 		refreshSetVarList();
@@ -109,7 +114,8 @@ public class SEdataManager {
 		refreshMessage = refreshMessage + getConditionList().size() + " Conditions, ";
 		refreshMessage = refreshMessage + getScriptList().size() + " Scripts, ";
 		refreshMessage = refreshMessage + getTriggerList().size() + " Triggers, ";
-		refreshMessage = refreshMessage + variableCount + " Variables loaded";
+		refreshMessage = refreshMessage + variableCount + " Variables, ";
+		refreshMessage = refreshMessage + packages.size() + " Packages loaded";
 		utils.writeinlog(1, refreshMessage);
 	}
 	
@@ -145,41 +151,7 @@ public class SEdataManager {
 	public int getTriggerItem(){
 		return this.TriggerItem;
 	}
-
-	//---------------------//
-	// GET BY ID
-	//---------------------//
-	
-	// returns the Condition with 'ID'
-	public SEcondition getConditionByID(int ID){
-		if (conditionList.containsKey(ID)) {
-			return conditionList.get(ID);
-		}else return null;
-	}
-	
-	// returns the Script with 'ID'
-	public SEscript getScriptByID(int ID){
-		if (scriptList.containsKey(ID)) {
-			return scriptList.get(ID);
-		}else return null;
-	}
-	
-	// returns the Trigger with 'ID'
-	public SEtrigger getTriggerByID(int ID){
-		if (triggerList.containsKey(ID)) {
-			return triggerList.get(ID);
-		}else return null;
-	}
-	
-	// returns the cuboid with 'ID'
-	public SEcuboid getCuboidByID(int ID){
-		if (cuboidList.containsKey(ID)) {
-			return cuboidList.get(ID);
-		}else return null;
 		
-		//return utils.stringToCuboid(readCuboid("cuboid"+ID));
-	}
-	
 	//---------------------//
 	// GET Lists
 	//---------------------//
@@ -205,22 +177,22 @@ public class SEdataManager {
 	}
 	
 	// returns the loaded conditionList
-	public Map<Integer, SEcondition> getConditionList() {
+	public Map<String, SEcondition> getConditionList() {
 		return this.conditionList;
 	}
 	
 	// returns the loaded scriptList
-	public Map<Integer, SEscript> getScriptList() {
+	public Map<String, SEscript> getScriptList() {
 		return this.scriptList;
 	}
 	
 	// returns the loaded triggerList
-	public Map<Integer, SEtrigger> getTriggerList() {
+	public Map<String, SEtrigger> getTriggerList() {
 		return triggerList;
 	}
 	
 	// returns the cuboidList loaded in this playerListener
-	public Map<Integer, SEcuboid> getCuboidList() {
+	public Map<String, SEcuboid> getCuboidList() {
 		return cuboidList;
 	}
 
@@ -234,22 +206,22 @@ public class SEdataManager {
 	}
 	
 	// sets the conditionList
-	public void setConditionList(Map<Integer, SEcondition> newConditionList) {
+	public void setConditionList(Map<String, SEcondition> newConditionList) {
 		this.conditionList = newConditionList;
 	}
 	
 	// sets the scriptList
-	public void setScriptList(Map<Integer, SEscript> newScriptList) {
+	public void setScriptList(Map<String, SEscript> newScriptList) {
 		this.scriptList = newScriptList;
 	}
 	
 	// sets the triggerList
-	public void setTriggerList(Map<Integer, SEtrigger> newTriggerList) {
+	public void setTriggerList(Map<String, SEtrigger> newTriggerList) {
 		triggerList = newTriggerList;
 	}
 	
 	// sets the cuboidList
-	public void setCuboidList(Map<Integer, SEcuboid> newCuboidList) {
+	public void setCuboidList(Map<String, SEcuboid> newCuboidList) {
 		cuboidList = newCuboidList;
 		//ScriptedEvents.writeInLog(1, "Size of CuboidList: "+String.valueOf(cuboidList.size()));
 	}
@@ -272,7 +244,7 @@ public class SEdataManager {
 	//---------------------//
 	// LOAD
 	//---------------------//
-	
+		
 	// returns a SEcondition with the information of a conditionFile
 	public SEcondition loadConditionFile(File conditionFile) {
 		
@@ -323,84 +295,6 @@ public class SEdataManager {
 	}
 	
 	//---------------------//
-	// LIST-TOOLS
-	//---------------------//
-	
-	// rewrites the IDs of scriptList
-	public void incrementScriptIDs(int offset) {
-		Map<Integer, SEscript> oldScriptList = this.scriptList;
-		Map<Integer, SEscript> newScriptList = new HashMap<Integer, SEscript>();
-		
-		// rewrite HERE!
-		for (int i=offset; i <= oldScriptList.size()+1; i++) {
-			newScriptList.put(i+1, oldScriptList.get(i));
-		}		
-		this.scriptList = newScriptList;
-	}
-
-	// rewrites the IDs of scriptList
-	public void removeNullConditions() {
-		Map<Integer, SEcondition> newConditionList = new HashMap<Integer, SEcondition>();
-		int y = 1;
-		
-		newConditionList.clear();
-		
-		// rewrite HERE!
-		for (int i=1; i <= conditionList.size()+1; i++) {
-			if (conditionList.get(i)!=null) {
-				newConditionList.put(y, conditionList.get(i));
-				y++;
-			}
-			
-		}	
-		
-		this.conditionList = newConditionList;
-	}
-	
-	// rewrites the IDs of scriptList
-	public void removeNullScripts() {
-		Map<Integer, SEscript> newScriptList = new HashMap<Integer, SEscript>();
-		int y = 1;
-		
-		newScriptList.clear();
-		
-		// rewrite HERE!
-		for (int i=1; i <= scriptList.size()+1; i++) {
-			if (scriptList.get(i)!=null) {
-				newScriptList.put(y, scriptList.get(i));
-				y++;
-			}
-			
-		}	
-		
-		this.scriptList = newScriptList;
-	}
-	
-	// increments the IDs of triggerList
-	public void incrementTriggerIDs(int offset) {
-		Map<Integer, SEtrigger> oldTriggerList = this.triggerList;
-		Map<Integer, SEtrigger> newTriggerList = new HashMap<Integer, SEtrigger>();
-		
-		// rewrite HERE!
-		for (int i=offset; i <= oldTriggerList.size()+1; i++) {
-			newTriggerList.put(i+1, oldTriggerList.get(i));
-		}		
-		this.triggerList = newTriggerList;
-	}
-		
-	// increments the IDs of cuboidList
-	public void incrementCuboidIDs(int offset) {
-		Map<Integer, SEcuboid> oldCuboidList = this.cuboidList;
-		Map<Integer, SEcuboid> newCuboidList = new HashMap<Integer, SEcuboid>();
-		
-		// rewrite HERE!
-		for (int i=offset; i <= oldCuboidList.size()+1; i++) {
-			newCuboidList.put(i+1, oldCuboidList.get(i));
-		}		
-		this.cuboidList = newCuboidList;
-	}
-	
-	//---------------------//
 	// REFRESH
 	//---------------------//
 	
@@ -414,12 +308,25 @@ public class SEdataManager {
 		
 	}
 	
+	public void refreshPackages() {
+		// get all dirs in main apart from base
+		File dir = new File(packageDirectory);
+		File[] children = dir.listFiles(new FileFilter() { public boolean accept(File file) { return (file.isDirectory()); } } );
+		if (children != null) {
+			for (int i=0; i<children.length; i++) {
+				String tempPath = children[i].getPath();
+				String tempName = tempPath.substring(tempPath.lastIndexOf(File.separator)+1);
+				packages.put(tempName, tempPath);
+			}
+		}
+	}
+	
 	// does a refresh on the list of condition
 	public void refreshConditionList() {
 		try {
 			// if there is a list, delete it
 			if (!(conditionList.isEmpty()))
-				conditionList = new HashMap<Integer, SEcondition>();
+				conditionList = new HashMap<String, SEcondition>();
 
 			// get all files in conditionDirectory which end on .condition
 			File dir = new File(conditionDirectory);
@@ -428,7 +335,8 @@ public class SEdataManager {
 			// loop over all .condition-files
 			for(int i = 0; i < conditionFileList.length; i++) {
 				// save the script into scriptList
-				conditionList.put(i+1, loadConditionFile(conditionFileList[i])) ;
+				SEcondition tempCondition = loadConditionFile(conditionFileList[i]);
+				conditionList.put(tempCondition.getName(), tempCondition) ;
 			}
 			
 		} catch (Exception ex) {
@@ -441,7 +349,7 @@ public class SEdataManager {
 		try {
 			// if there is a list, delete it
 			if (!(scriptList.isEmpty()))
-				scriptList = new HashMap<Integer, SEscript>();
+				scriptList = new HashMap<String, SEscript>();
 
 			// get all files in scriptDirectory which end on .script
 			File dir = new File(scriptDirectory);
@@ -450,7 +358,8 @@ public class SEdataManager {
 			// loop over all .script-files
 			for(int i = 0; i < scriptFileList.length; i++) {
 				// save the script into scriptList
-				scriptList.put(i+1, loadScriptFile(scriptFileList[i])) ;
+				SEscript tempScript = loadScriptFile(scriptFileList[i]);
+				scriptList.put(tempScript.getName(), tempScript) ;
 			}
 			
 		} catch (Exception ex) {
@@ -458,37 +367,105 @@ public class SEdataManager {
 		}
 	}
 	
-	// does a refresh on the list of triggers
- 	public void refreshTriggerList() {
-		try {
-			// if there is a list, delete it
-			if (!(triggerList.isEmpty()))
-				triggerList.clear();
-			
-			Map<Integer,String> stringTriggers = readTriggerFile();
-			for (int i=1;i<=stringTriggers.size();i++) {
-				triggerList.put(i, utils.stringToTrigger(stringTriggers.get(i)));
+	// does a refresh on the main list of triggers
+ 	public void refreshMainTriggerList() {
+ 	// if there is a list, delete it
+		if (!(triggerList.isEmpty()))
+			triggerList.clear();
+		
+		addTriggerList(null);
+		
+		Iterator<String> lauf = packages.keySet().iterator();
+		while (lauf.hasNext()) {
+			addTriggerList(lauf.next());
+		}
+		
+	}
+ 	
+ 	// does a refresh on the list of triggers in a package
+ 	public void addTriggerList(String packageName) {
+ 		Map<String,SEtrigger> list = triggerList;;
+		File file;
+		
+ 		if (packageName == null) {
+ 			file = triggerFile;
+ 		} else {
+ 			String packagePath = packages.get(packageName);
+ 			file = new File(packagePath + File.separator + "trigger.dat");
+ 		}
+ 		
+ 		if (!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (Exception ex) {
+				SEutils.SElog(3, "Couldn't create trigger.dat, in package '"+packageName+"'!");
 			}
-			
+		}
+ 		
+		try {	
+			Map<Integer,String> stringTriggers = read(file);
+			for (int i=1;i<=stringTriggers.size();i++) {
+				SEtrigger tempTrigger = utils.stringToTrigger(stringTriggers.get(i));
+				if (packageName != null)
+					tempTrigger.setName(packageName+"."+tempTrigger.getName());
+				list.put(tempTrigger.getName(), tempTrigger);
+			}
 		} catch (Exception ex) {
-			SEutils.SElog(3, "Failed to load triggers from file!");
+			if (packageName == null)
+				SEutils.SElog(3, "Failed to load triggers from file!");
+			else
+				SEutils.SElog(3, "Failed to load triggers from file, in package '"+packageName+"'!");
 		}
 	}
-
+ 	
 	// does a refresh on the list of cuboids
- 	public void refreshCuboidList() {
-		try {
-
-			if (!(cuboidList.isEmpty()))
-				cuboidList.clear();
-			
-			Map<Integer,String> stringCuboids = readCuboidFile();
-			for (int i=1;i<=stringCuboids.size();i++) {
-				cuboidList.put(i, utils.stringToCuboid(stringCuboids.get(i)));
+ 	public void refreshMainCuboidList() {
+ 	 	// if there is a list, delete it
+		if (!(cuboidList.isEmpty()))
+			cuboidList.clear();
+		
+		addCuboidList(null);
+		
+		Iterator<String> lauf = packages.keySet().iterator();
+		while (lauf.hasNext()) {
+			addCuboidList(lauf.next());
+		}
+		
+	}
+ 	
+ 	// does a refresh on the list of cuboids in a package
+ 	public void addCuboidList(String packageName) {
+ 		Map<String,SEcuboid> list = cuboidList;;
+		File file;
+		
+ 		if (packageName == null) {
+ 			file = cuboidFile;
+ 		} else {
+ 			String packagePath = packages.get(packageName);
+ 			file = new File(packagePath + File.separator + "cuboid.dat");
+ 		}
+ 		
+ 		if (!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (Exception ex) {
+				SEutils.SElog(3, "Couldn't create cuboid.dat, in package '"+packageName+"'!");
 			}
-			
+		}
+ 		
+		try {
+			Map<Integer,String> stringCuboids = read(file);
+			for (int i=1;i<=stringCuboids.size();i++) {
+				SEcuboid tempCuboid = utils.stringToCuboid(stringCuboids.get(i));
+				if (packageName != null)
+					tempCuboid.setName(packageName+"."+tempCuboid.getName());
+				list.put(tempCuboid.getName(), tempCuboid);
+			}
 		} catch (Exception ex) {
-			SEutils.SElog(3, "Failed to load cuboids from file!");
+			if (packageName == null)
+				SEutils.SElog(3, "Failed to load cuboids from file!");
+			else
+				SEutils.SElog(3, "Failed to load cuboids from file, in package '"+packageName+"'!");
 		}
 	}
  	
@@ -575,66 +552,22 @@ public class SEdataManager {
  		return result;
  		
  	}
- 	 	
-	// returns the ID of the searched condition or returns -1 if the condition is not found
-	public int searchConditionList(String search) {
-		int result=-1; 
-		for (int i=1; i <= conditionList.size(); i++) {
-			if (conditionList.get(i).getName().equalsIgnoreCase(search)) {
-				return i;
-			}
-		}		
-		return result;
-	}
  	
-	// returns the ID of the searched script or returns -1 if the script is not found
-	public int searchScriptList(String search) {
-		int result=-1; 
-		for (int i=1; i <= scriptList.size(); i++) {
-			if (scriptList.get(i).getName().equalsIgnoreCase(search)) {
-				return i;
-			}
-		}		
-		return result;
-	}
- 	
-	// returns the ID of the searched trigger or returns -1 if the trigger is not found
-	public int searchTriggerList(String search) {
-		int result=-1; 
-		for (int i=1; i <= triggerList.size(); i++) {
-			if (triggerList.get(i).getName().equalsIgnoreCase(search)) {
-				return i;
-			}
-		}		
-		return result;
-	}
- 	
-	// returns the ID of the searched cuboid or returns -1 if the cuboid is not found
-	public int searchCuboidList(String search) {
-		int result=-1; 
-		for (int i=1; i <= cuboidList.size(); i++) {
-			if (cuboidList.get(i).getName().equalsIgnoreCase(search)) {
-				return i;
-			}
-		}		
-		return result;
-	}
-	
 	//---------------------//
 	// REWRITE
 	//---------------------//
 
 	// rewrites the files of all loaded condition
 	public void rewriteAllConditionFiles() {
-		removeNullConditions();
-		for (int i=1; i <= conditionList.size(); i++) {
-			rewriteCondition(conditionList.get(i));
+		Iterator<String> lauf = conditionList.keySet().iterator();
+		while (lauf.hasNext()) {
+			SEcondition tempCondition = conditionList.get(lauf.next());
+			rewriteCondition(tempCondition);
 		}
 	}
 	
 	// rewrites the files of all loaded scripts
 	public void rewriteAllScriptFiles() {
-		removeNullScripts();
 		for (int i=1; i <= scriptList.size(); i++) {
 			rewriteScript(scriptList.get(i));
 		}
@@ -725,13 +658,10 @@ public class SEdataManager {
 		} catch (IOException e) {
 			SEutils.SElog(3, "Couldn't rewrite trigger.yml!");
 		}
-				
-		int newID = 1;
 		
 		for (int i = 1; i <= triggerList.size()+1; i++) {
 			if (triggerList.get(i)!=null) {
 				writeTrigger(triggerList.get(i).toString());
-				newID++;
 			}
 		}
 	}
@@ -746,11 +676,11 @@ public class SEdataManager {
 		}
 		
 		// Cuboid-File gets written here		
-		int newID = 1;
-		for (int i = 1; i <= cuboidList.size()+1; i++) {
-			if (cuboidList.get(i)!=null) {
-				writeCuboid(cuboidList.get(i).toString());
-				newID++;
+		Iterator<String> lauf = cuboidList.keySet().iterator();
+		while (lauf.hasNext()) {
+			String tempName = lauf.next();
+			if (tempName!=null) {
+				writeCuboid(cuboidList.get(tempName).toString());
 			}
 		}
 	}

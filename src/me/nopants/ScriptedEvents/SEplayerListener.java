@@ -7,6 +7,7 @@ import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import org.bukkit.Location;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.bukkit.entity.Player;
@@ -55,20 +56,27 @@ public class SEplayerListener extends PlayerListener {
 	// returns the nearest cuboid to a location
 	public SEcuboid getNextCuboid(Location playerLocation) {
 		Location tempLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), playerLocation.getY(), playerLocation.getZ());
-		SEcuboid result = SEdata.getCuboidList().get(1);
+		Map<String,SEcuboid> cuboidList = SEdata.getCuboidList();
+		SEcuboid result = null;
+		int i = 1;
 		
-		if (SEdata.getCuboidList().size() > 0) {
-		    for (int i = 1; i <= SEdata.getCuboidList().size(); i++) {
-		    	if (i==1){
-		    		result = SEdata.getCuboidList().get(i);
-		    	}
-		    	else {
-		    		if ((SEdata.getCuboidList().get(i) != null) && (SEdata.getCuboidList().get(i).getWorld().equalsIgnoreCase(playerLocation.getWorld().getName())))
-		    			if ((utils.getDist(SEdata.getCuboidList().get(i).getRelativeCenter(tempLocation), playerLocation))<(utils.getDist(result.getRelativeCenter(tempLocation), playerLocation))) {
-		    				result = SEdata.getCuboidList().get(i);
-		    		}
-		    	}
-		    }
+		if (cuboidList.size() > 0) {
+			
+			Iterator<String> lauf = cuboidList.keySet().iterator(); 
+			while (lauf.hasNext()) {
+				SEcuboid tempCuboid = cuboidList.get(lauf.next());
+				if (tempCuboid != null && tempCuboid.getWorld().equalsIgnoreCase(playerLocation.getWorld().getName())) {
+					if (i == 1) {
+						result = tempCuboid;
+						i++;
+					}
+					else {
+						if ((utils.getDist(tempCuboid.getRelativeCenter(tempLocation), playerLocation))<(utils.getDist(result.getRelativeCenter(tempLocation), playerLocation)))
+		    				result = tempCuboid;
+					}
+					
+				}
+			}
 		}
 		return result;
 	}
@@ -129,7 +137,7 @@ public class SEplayerListener extends PlayerListener {
 		
 		//---[ onLeave ]--------------------------------------------------------------//
 		// get the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onLeave, leftCuboid));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onLeave, leftCuboid));
 		// release the triggers
 		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(leavingPlayer, leftCuboid));
 		//----------------------------------------------------------------------------//
@@ -144,7 +152,7 @@ public class SEplayerListener extends PlayerListener {
 		
 		//---[ onEnter ]--------------------------------------------------------------//
 		// get the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onEnter, enteredCuboid));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onEnter, enteredCuboid));
 		// release the triggers
 		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(enteringPlayer, enteredCuboid));
 		//----------------------------------------------------------------------------//
@@ -159,7 +167,7 @@ public class SEplayerListener extends PlayerListener {
 		
 		//---[ onInteract ]-----------------------------------------------------------//
 		// get the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onInteract));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onInteract));
 		// release the triggers
 		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));		
 		event.setCancelled(cancel);
@@ -212,7 +220,7 @@ public class SEplayerListener extends PlayerListener {
 
 		//---[ onCommand ]------------------------------------------------------------//
 		// return the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onCommand, commandLabel));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onCommand, commandLabel));
 		
 		if (!triggerList.isEmpty()) {
 			// release the triggers matching to the entered Cuboid and the event onInteractAt
@@ -227,7 +235,7 @@ public class SEplayerListener extends PlayerListener {
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		//---[ onRespawn ]------------------------------------------------------------//
 		// return the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onRespawn));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onRespawn));
 		
 		if (!triggerList.isEmpty()) {
 			// release the triggers matching to the entered Cuboid and the event onInteractAt

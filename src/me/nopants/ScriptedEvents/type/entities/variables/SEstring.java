@@ -1,8 +1,6 @@
 package me.nopants.ScriptedEvents.type.entities.variables;
 
-import me.nopants.ScriptedEvents.type.entities.SEentity;
-
-public class SEstring extends SEentity{
+public class SEstring extends SEvariable{
 	private static final long serialVersionUID = 1L;
 	
 	String value;

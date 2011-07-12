@@ -239,7 +239,7 @@ public class SEutils {
 						temp = triggerStrings[1].substring(temp.indexOf('('));
 						temp = temp.substring(1, temp.length()-1);
 						try {
-							triggerCuboid = SEdata.getCuboidList().get(SEdata.searchCuboidList(temp));
+							triggerCuboid = SEdata.getCuboidList().get(temp);
 							// SElog(1, "TriggerCuboid: "+triggerCuboid.getName()); // debug
 						} catch (Exception e) {
 							triggerCuboid = null;
@@ -247,28 +247,21 @@ public class SEutils {
 					} else triggerCuboid = null;
 				} else triggerCuboid = null;
 
-				// Condition (temp=condition-ID)
+				// Condition (temp=condition-name)
 				if (triggerStrings[2].length()>10) {
 					temp = triggerStrings[2].substring(10);
 					try {
-						if (SEdata.searchConditionList(temp) == -1)
-							triggerCondition = null;
-						else
-							triggerCondition = SEdata.getConditionList().get(SEdata.searchConditionList(temp));
-						// SElog(1, "TriggerCondition: "+triggerCondition.getName()); // debug
+						triggerCondition = SEdata.getConditionList().get(temp);
 					} catch (Exception e) {
 						triggerCondition = null;
 					}	
 				} else triggerCondition = null;
 				
-				// Script (temp=script-ID)
+				// Script (temp=script-name)
 				if (triggerStrings[3].length()>7) {
 					temp = triggerStrings[3].substring(7);
 					try {
-						if (SEdata.searchScriptList(temp) == -1)
-							triggerScript = null;
-						else
-							triggerScript = SEdata.getScriptList().get(SEdata.searchScriptList(temp));
+						triggerScript = SEdata.getScriptList().get(temp);
 						//SElog(1, "TriggerScript: "+triggerScript.getName()); // debug
 					} catch (Exception e) {
 						triggerScript = null;

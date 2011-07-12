@@ -57,15 +57,11 @@ commands:
         usage: /<command> <cuboid name>
     SE.cuboid.delete:
         aliases: [SE.cu.d]
-        description: Delete a cuboid by its ID
-        usage: /<command> <cuboid ID>
+        description: Delete a cuboid by its name
+        usage: /<command> <cuboid name>
     SE.cuboid.edit:
         aliases: [SE.cu.e]
         description: Edit a cuboid
-        usage: /<command> <cuboid ID>
-    SE.cuboid.getID:
-        aliases: [SE.cu.id]
-        description: Shows a cuboids ID
         usage: /<command> <cuboid name>
     SE.trigger.create:
         aliases: [SE.t.c]
@@ -73,15 +69,11 @@ commands:
         usage: /<command> <trigger name>
     SE.trigger.delete:
         aliases: [SE.t.d]
-        description: Delete a trigger by its ID
-        usage: /<command> <trigger ID>
+        description: Delete a trigger by its name
+        usage: /<command> <trigger name>
     SE.trigger.edit:
         aliases: [SE.t.e]
         description: Edit a trigger
-        usage: /<command> <trigger ID>
-    SE.trigger.getID:
-        aliases: [SE.t.id]
-        description: Shows a cuboids ID
         usage: /<command> <trigger name>
     SE.script.create:
         aliases: [SE.s.c]
@@ -89,15 +81,11 @@ commands:
         usage: /<command> <script name>
     SE.script.delete:
         aliases: [SE.s.d]
-        description: Delete a script by its ID
-        usage: /<command> <script ID>
+        description: Delete a script by its name
+        usage: /<command> <script name>
     SE.script.edit:
         aliases: [SE.s.e]
         description: Edit a script
-        usage: /<command> <script ID>
-    SE.script.getID:
-        aliases: [SE.s.id]
-        description: Shows a scripts ID
         usage: /<command> <script name>
     SE.condition.create:
         aliases: [SE.co.c]
@@ -105,29 +93,25 @@ commands:
         usage: /<command> <condition name>
     SE.condition.delete:
         aliases: [SE.co.d]
-        description: Delete a condition by its ID
-        usage: /<command> <condition ID>
+        description: Delete a condition by its name
+        usage: /<command> <condition name>
     SE.condition.edit:
         aliases: [SE.co.e]
         description: Edit a condition
-        usage: /<command> <condition ID>
-    SE.condition.getID:
-        aliases: [SE.co.id]
-        description: Shows a conditions ID
         usage: /<command> <condition name>
     SE.variable.create:
         aliases: [SE.v.c]
         description: Creates a new variable
-        usage: /<command> <type> <name> <value>
+        usage: /<command> <type> <varibale name> <value>
     SE.variable.delete:
         aliases: [SE.v.d]
-        description: Delete a variable by its Name
-        usage: /<command> <name>
+        description: Delete a variable by its name
+        usage: /<command> <type> <variable name>
     SE.variable.edit:
         aliases: [SE.v.e]
         description: Change a variables value
-        usage: /<command> <type> <name> <value>
+        usage: /<command> <type> <variable name> <value>
     SE.variable.list:
         aliases: [SE.v.l]
-        description: Lists all variables of one type
-        usage: /<command> <type>
+        description: Lists all variables of one type or a specific variable
+        usage: /<command> <type> [variable name]

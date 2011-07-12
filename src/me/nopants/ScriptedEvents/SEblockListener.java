@@ -24,7 +24,7 @@ public class SEblockListener extends BlockListener{
 	public void onBlockBreak(BlockBreakEvent event) {		
 		//---[ onBlockBreak ]-----------------------------------------------------------//
 		// get the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onBlockBreak));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onBlockBreak));
 		// release the triggers
 		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event, event.getBlock().getTypeId(), Integer.valueOf(event.getBlock().getData())));
 		//----------------------------------------------------------------------------//
@@ -33,7 +33,7 @@ public class SEblockListener extends BlockListener{
 	public void onBlockPlace(BlockPlaceEvent event) {
 		//---[ onBlockPlace ]-----------------------------------------------------------//
 		// get the triggers matching to the entered Cuboid and the event onEnter
-		Map<Integer, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onBlockPlace));
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onBlockPlace));
 		// release the triggers
 		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
 		//----------------------------------------------------------------------------//
