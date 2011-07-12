@@ -23,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class SEutils {
 	
-	private Logger log = Logger.getLogger("Minecraft");
+	
 	private SEdataManager SEdata;
 
 	public SEutils(SEdataManager newSEdata) {
@@ -107,6 +107,7 @@ public class SEutils {
 	
 	// writes in log
 	public void writeinlog(int defcon, String message){
+		Logger log = Logger.getLogger("Minecraft");
 		switch (defcon) {
 		case 1:
 			log.info(message);
@@ -121,7 +122,8 @@ public class SEutils {
 	}
 	
 	// writes in log, beginning with "SE: "
-	public void SElog(int defcon, String message) {
+	static public void SElog(int defcon, String message) {
+		Logger log = Logger.getLogger("Minecraft");
 		String prefix = "SE: ";
 		switch (defcon) {
 		case 1:
@@ -387,4 +389,25 @@ public class SEutils {
 		}
 		return result;
 	}
+
+	// converts the sender to a player or sends the console a message
+	public Player senderToPlayer(CommandSender sender) {
+		if (sender instanceof Player) {
+			return (Player) sender;
+		} else {
+			//utils.SElog(1, "This command is for players only!");
+			return null;
+		}
+	}
+	
+	public String getSenderName(CommandSender sender) {
+		String result;
+		Player player = senderToPlayer(sender);
+		if (player != null)
+			result = player.getName();
+		else
+			result = "Console";
+		return result;		
+	}
+
 }

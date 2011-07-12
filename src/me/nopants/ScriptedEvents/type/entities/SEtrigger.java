@@ -4,6 +4,8 @@ import me.nopants.ScriptedEvents.type.SEentitySet;
 
 
 public class SEtrigger extends SEentity {
+	private static final long serialVersionUID = 1L;
+	
 	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, onBlockBreak, onBlockPlace, onRespawn, none};
 	triggerEvent event;
 	private String triggerCommand;

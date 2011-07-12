@@ -1,7 +1,10 @@
 package me.nopants.ScriptedEvents.type.entities;
 
-public class SEentity {
+import java.io.Serializable;
 
+public class SEentity implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	String name;
 	String owner;
 	

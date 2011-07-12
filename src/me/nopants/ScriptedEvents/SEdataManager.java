@@ -20,6 +20,7 @@ import me.nopants.ScriptedEvents.type.entities.SEcondition;
 import me.nopants.ScriptedEvents.type.entities.SEcuboid;
 import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
+import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -45,7 +46,7 @@ public class SEdataManager {
 	private Map<Integer, SEcondition> conditionList = new HashMap<Integer, SEcondition>();
 	private Map<Integer, SEscript> scriptList = new HashMap<Integer, SEscript>();
 	private Map<String, String> stringVarList = new HashMap<String, String>();
-	private Map<String, Integer> intVarList = new HashMap<String, Integer>();
+	private Map<String, SEinteger> intVarList = new HashMap<String, SEinteger>();
 	private Map<String,Set<String>> setVarList =  new HashMap<String, Set<String>>();
 	private Map<Player, Boolean> debugees = new HashMap<Player, Boolean>();
 	private int TriggerItem = 0;
@@ -68,27 +69,27 @@ public class SEdataManager {
 			try {
 				configFile.createNewFile();
 				writeConfig("TriggerItem", "288");
-				utils.SElog(2, "config.yml created!");
+				SEutils.SElog(2, "config.yml created!");
 			} catch (Exception ex) {
-				utils.SElog(3, "Couldn't create config.yml!");
+				SEutils.SElog(3, "Couldn't create config.yml!");
 			}
 		}
 		
 		if (!cuboidFile.exists()) {
 			try {
 				cuboidFile.createNewFile();
-				utils.SElog(2, "cuboid.yml created!");
+				SEutils.SElog(2, "cuboid.yml created!");
 			} catch (Exception ex) {
-				utils.SElog(3, "Couldn't create cuboid.yml!");
+				SEutils.SElog(3, "Couldn't create cuboid.yml!");
 			}
 		}
 		
 		if (!triggerFile.exists()) {
 			try {
 				triggerFile.createNewFile();
-				utils.SElog(2, "trigger.yml created!");
+				SEutils.SElog(2, "trigger.yml created!");
 			} catch (Exception ex) {
-				utils.SElog(3, "Couldn't create trigger.yml!");
+				SEutils.SElog(3, "Couldn't create trigger.yml!");
 			}
 		}
 		
@@ -188,7 +189,7 @@ public class SEdataManager {
 	}
 	
 	// returns the intVarList
-	public Map<String, Integer> getIntVarList() {
+	public Map<String, SEinteger> getIntVarList() {
 		return this.intVarList;
 	}
 	
@@ -263,7 +264,7 @@ public class SEdataManager {
 	}
 	
 	// sets the intVarList
-	public void setIntVarList(Map<String, Integer> newIntVarList) {
+	public void setIntVarList(Map<String, SEinteger> newIntVarList) {
 		this.intVarList = newIntVarList;
 	}
 	
@@ -407,7 +408,7 @@ public class SEdataManager {
 		try {
 			TriggerItem = Integer.valueOf(readConfig("TriggerItem"));
 		} catch (Exception e) {
-			utils.SElog(3, "Failed to load config from file!");
+			SEutils.SElog(3, "Failed to load config from file!");
 		}
 		
 	}
@@ -430,7 +431,7 @@ public class SEdataManager {
 			}
 			
 		} catch (Exception ex) {
-			utils.SElog(3, "Failed to load condition!");
+			SEutils.SElog(3, "Failed to load condition!");
 		}
 	}
 	
@@ -452,7 +453,7 @@ public class SEdataManager {
 			}
 			
 		} catch (Exception ex) {
-			utils.SElog(3, "Failed to load scripts!");
+			SEutils.SElog(3, "Failed to load scripts!");
 		}
 	}
 	
@@ -469,7 +470,7 @@ public class SEdataManager {
 			}
 			
 		} catch (Exception ex) {
-			utils.SElog(3, "Failed to load triggers from file!");
+			SEutils.SElog(3, "Failed to load triggers from file!");
 		}
 	}
 
@@ -486,7 +487,7 @@ public class SEdataManager {
 			}
 			
 		} catch (Exception ex) {
-			utils.SElog(3, "Failed to load cuboids from file!");
+			SEutils.SElog(3, "Failed to load cuboids from file!");
 		}
 	}
  	
@@ -514,9 +515,9 @@ public class SEdataManager {
 			if (!stringVarFile.exists()) {
 				try {
 					save(stringVarList, stringVarPath);
-					utils.SElog(2, "string.var created!");
+					SEutils.SElog(2, "string.var created!");
 				} catch (Exception ex) {
-					utils.SElog(3, "Couldn't create string.var!");
+					SEutils.SElog(3, "Couldn't create string.var!");
 				}
 			} else {
 				if (load(stringVarPath) instanceof Map<?,?>) {			
@@ -524,7 +525,7 @@ public class SEdataManager {
 				}	
 			}
 		} catch (Exception ex) {
-			utils.SElog(3, "Failed to load string-variables from file!");
+			SEutils.SElog(3, "Failed to load string-variables from file!");
 		}
 	}
  	
@@ -536,17 +537,17 @@ public class SEdataManager {
 			if (!intVarFile.exists()) {
 				try {
 					save(intVarList, intVarPath);
-					utils.SElog(2, "integer.var created!");
+					SEutils.SElog(2, "integer.var created!");
 				} catch (Exception ex) {
-					utils.SElog(3, "Couldn't create integer.var!");
+					SEutils.SElog(3, "Couldn't create integer.var!");
 				}
 			} else {
 				if (load(intVarPath) instanceof Map<?,?>) {			
-					this.intVarList = (Map<String,Integer>)load(intVarPath);
+					this.intVarList = (Map<String,SEinteger>)load(intVarPath);
 				}	
 			}
 		} catch (Exception ex) {
-			utils.SElog(3, "Failed to load integer-variables from file!");
+			SEutils.SElog(3, "Failed to load integer-variables from file!");
 		}
 	}
  	
@@ -679,7 +680,7 @@ public class SEdataManager {
 				write(newConditionFile, condition.getConditionList().get(i));
 			}
 		} catch (IOException e) {
-			utils.SElog(3, "Couldn't rewrite "+condition.getName()+".condition!");
+			SEutils.SElog(3, "Couldn't rewrite "+condition.getName()+".condition!");
 		}
 	}
 	
@@ -704,7 +705,7 @@ public class SEdataManager {
 				write(newScriptFile, script.getActionList().get(i));
 			}
 		} catch (IOException e) {
-			utils.SElog(3, "Couldn't rewrite "+script.getName()+".script!");
+			SEutils.SElog(3, "Couldn't rewrite "+script.getName()+".script!");
 		}
 	}
 	
@@ -714,7 +715,7 @@ public class SEdataManager {
 			triggerFile.delete();
 			triggerFile.createNewFile();
 		} catch (IOException e) {
-			utils.SElog(3, "Couldn't rewrite trigger.yml!");
+			SEutils.SElog(3, "Couldn't rewrite trigger.yml!");
 		}
 				
 		int newID = 1;
@@ -733,7 +734,7 @@ public class SEdataManager {
 			cuboidFile.delete();
 			cuboidFile.createNewFile();
 		} catch (IOException e) {
-			utils.SElog(3, "Couldn't rewrite cuboid.yml!");
+			SEutils.SElog(3, "Couldn't rewrite cuboid.yml!");
 		}
 		
 		// Cuboid-File gets written here		
@@ -755,7 +756,7 @@ public class SEdataManager {
 			tempSetFile.delete();
 			tempSetFile.createNewFile();
 		} catch (IOException e) {
-			utils.SElog(3, "Couldn't rewrite "+setName+".dat!");
+			SEutils.SElog(3, "Couldn't rewrite "+setName+".dat!");
 		}				
 		
 		Iterator<String> lauf = tempSetVar.iterator();
@@ -771,7 +772,7 @@ public class SEdataManager {
 			stringVarFile.delete();
 			save(stringVarList, stringVarPath);
 		} catch (Exception ex) {
-			utils.SElog(3, "Couldn't rewrite string.var!");
+			SEutils.SElog(3, "Couldn't rewrite string.var!");
 		}
 	}
 	
@@ -781,7 +782,7 @@ public class SEdataManager {
 			intVarFile.delete();
 			save(intVarList, intVarPath);
 		} catch (Exception ex) {
-			utils.SElog(3, "Couldn't rewrite integer.var!");
+			SEutils.SElog(3, "Couldn't rewrite integer.var!");
 		}
 	}
 	
@@ -830,7 +831,7 @@ public class SEdataManager {
 		    out.write(x+System.getProperty("line.separator"));
 		    out.close();	
 		} catch (Exception e) {
-			utils.SElog(3, "Could not write to '"+file.getName()+"'!");
+			SEutils.SElog(3, "Could not write to '"+file.getName()+"'!");
 		} 
 	}
 
@@ -842,7 +843,7 @@ public class SEdataManager {
 			return temp;
 		}
 		catch (Exception ex) {
-			utils.SElog(3, "Could not load "+root+" in "+configFile.getName());
+			SEutils.SElog(3, "Could not load "+root+" in "+configFile.getName());
 		}
 		return "";
 	}
@@ -878,7 +879,7 @@ public class SEdataManager {
 		    	scanner.close();
 		    }
 		} catch (Exception ex) {
-			utils.SElog(3, "Could not load '"+file.getName()+"'!");
+			SEutils.SElog(3, "Could not load '"+file.getName()+"'!");
 		}
 		return null;
 	}

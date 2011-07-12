@@ -12,6 +12,7 @@ import me.nopants.ScriptedEvents.type.entities.SEcuboid;
 import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
+import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -54,20 +55,12 @@ public class SEcommander {
 		this.hasPermissions = plugin.hasPermissions; 
 	}
 
-	// converts the sender to a player or sends the console a message
-	public Player senderToPlayer(CommandSender sender) {
-		if (sender instanceof Player) {
-			return (Player) sender;
-		} else {
-			//utils.SElog(1, "This command is for players only!");
-			return null;
-		}
-	}
+
 
 	public boolean checkPermission(CommandSender sender, String permission){
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if( (player == null || (hasPermissions && permissionHandler.has(player, permission))) || player.isOp()){
 			result=true;
 		} else {
@@ -80,7 +73,7 @@ public class SEcommander {
 	// se.debug
 	public boolean debug(CommandSender sender, String[] args) {
 		boolean result = false;
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+debugNode)){
 			plugin.SEdata.toggleDebugees(player);
 			result = true;
@@ -92,7 +85,7 @@ public class SEcommander {
 	public boolean help(CommandSender sender, String[] args){
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+helpNode)){
 			if (args.length == 0) {
 				sender.sendMessage("--------------(1/2)--------------");
@@ -159,7 +152,7 @@ public class SEcommander {
 	public boolean refresh(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+refreshNode)){
 			plugin.SEdata.initializeData();
 			utils.SEmessage(sender, "Refresh finished!");
@@ -179,7 +172,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 	
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+addNode)){
 			
 			if (!(editEntity==null||editEntity.isEmpty())) {	
@@ -248,7 +241,7 @@ public class SEcommander {
 			intArgs = false;
 		}
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+deleteNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if ((editEntity.script != null)||(editEntity.condition != null)) {
@@ -340,7 +333,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+eventNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if (args.length == 1) {
@@ -372,7 +365,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+entityNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if (args.length == 1) {
@@ -434,7 +427,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+scriptNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if (args.length == 1) {
@@ -476,7 +469,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+conditionNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if (args.length == 1) {
@@ -517,7 +510,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+nameNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				if (args.length == 1) {
@@ -566,7 +559,7 @@ public class SEcommander {
 	public boolean editClose(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+closeNode)){
 			Map<CommandSender, SEentitySet> tempList = plugin.SEdata.getEditEntityList();
 			tempList.remove(sender);
@@ -584,7 +577,7 @@ public class SEcommander {
 		boolean result = false;
 		SEentitySet editEntity = plugin.SEdata.getEditEntityList().get(sender);
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+editNode+saveNode)){
 			if (!(editEntity==null||editEntity.isEmpty())) {
 				
@@ -653,7 +646,7 @@ public class SEcommander {
 	public boolean cuboidCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+cuboidNode+createNode)){
 			if (args.length == 1) {
 				if (player!=null) {
@@ -689,7 +682,7 @@ public class SEcommander {
 	public boolean cuboidDelete(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+cuboidNode+deleteNode)){
 			Map<Integer, SEcuboid> cuboidList = new HashMap<Integer, SEcuboid>();
 			cuboidList = plugin.SEdata.getCuboidList();
@@ -713,7 +706,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete Cuboid!");
+						SEutils.SElog(3, "Couldn't delete Cuboid!");
 						result = false;				
 					}
 				} else {
@@ -733,7 +726,7 @@ public class SEcommander {
 	public boolean cuboidEdit(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+cuboidNode+editNode)){
 			if (args.length == 1) {
 				
@@ -780,7 +773,7 @@ public class SEcommander {
 	public boolean cuboidGetID(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+cuboidNode+getIDNode)){
 			if (args.length == 1) {
 				int searchResult = plugin.SEdata.searchCuboidList(args[0]);
@@ -805,7 +798,7 @@ public class SEcommander {
 	public boolean triggerCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+createNode)){
 			if (args.length == 1) {
 				if (plugin.SEdata.searchTriggerList(args[0])<0) {
@@ -838,7 +831,7 @@ public class SEcommander {
 	public boolean triggerDelete(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+deleteNode)){
 			Map<Integer, SEtrigger> triggerList = new HashMap<Integer, SEtrigger>();
 			triggerList = plugin.SEdata.getTriggerList();
@@ -862,7 +855,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete Trigger!");
+						SEutils.SElog(3, "Couldn't delete Trigger!");
 						result = false;				
 					}
 				} else {
@@ -882,7 +875,7 @@ public class SEcommander {
 	public boolean triggerEdit(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+editNode)){
 			if (args.length == 1) {
 				
@@ -929,7 +922,7 @@ public class SEcommander {
 	public boolean triggerGetID(CommandSender sender, String[] args) {
 		boolean result = false;
 	
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+getIDNode)){
 			if (args.length == 1) {
 				int searchResult = plugin.SEdata.searchTriggerList(args[0]);
@@ -954,7 +947,7 @@ public class SEcommander {
 	public boolean scriptCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+createNode)){
 			if (args.length == 1) {
 				if (plugin.SEdata.searchScriptList(args[0])<0) {
@@ -989,7 +982,7 @@ public class SEcommander {
 	public boolean scriptDelete(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+deleteNode)){
 			boolean intArgs = false;
 			int arg = 0;
@@ -1013,7 +1006,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete script!");
+						SEutils.SElog(3, "Couldn't delete script!");
 						result = false;				
 					}
 				} else {
@@ -1033,7 +1026,7 @@ public class SEcommander {
 	public boolean scriptEdit(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+editNode)){
 			if (args.length == 1) {
 				
@@ -1079,7 +1072,7 @@ public class SEcommander {
 	public boolean scriptGetID(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+getIDNode)){
 			if (args.length == 1) {
 				int searchResult = plugin.SEdata.searchScriptList(args[0]);
@@ -1104,7 +1097,7 @@ public class SEcommander {
 	public boolean conditionCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+createNode)){
 			if (args.length == 1) {
 				if (plugin.SEdata.searchConditionList(args[0])<0) {
@@ -1139,7 +1132,7 @@ public class SEcommander {
 	public boolean conditionDelete(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+deleteNode)){
 			boolean intArgs = false;
 			int arg = 0;
@@ -1163,7 +1156,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete condition!");
+						SEutils.SElog(3, "Couldn't delete condition!");
 						result = false;				
 					}
 				} else {
@@ -1183,7 +1176,7 @@ public class SEcommander {
 	public boolean conditionEdit(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+editNode)){
 			if (args.length == 1) {
 				
@@ -1231,7 +1224,7 @@ public class SEcommander {
 	public boolean conditionGetID(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+getIDNode)){
 			if (args.length == 1) {
 				int searchResult = plugin.SEdata.searchConditionList(args[0]);
@@ -1258,7 +1251,9 @@ public class SEcommander {
 	public boolean variableCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
-		Player player = senderToPlayer(sender);
+		String senderName = utils.getSenderName(sender);
+		Player player = utils.senderToPlayer(sender);
+		
 		if(checkPermission(player, seNode+variableNode+createNode)){
 			if (args.length == 2 || args.length == 3) {
 				
@@ -1303,8 +1298,8 @@ public class SEcommander {
 							if (intArgs) {
 								if (!plugin.SEdata.variableExists(args[1])) {
 									
-									Map<String,Integer> tempList = plugin.SEdata.getIntVarList();
-									tempList.put(args[1], value);
+									Map<String,SEinteger> tempList = plugin.SEdata.getIntVarList();
+									tempList.put(args[1], new SEinteger(args[1],senderName, value));
 									plugin.SEdata.setIntVarList(tempList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();
@@ -1365,10 +1360,10 @@ public class SEcommander {
 	public boolean variableDelete(CommandSender sender, String[] args) {
 		boolean result = false;
 		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
-		Map<String,Integer> tempIntVarList = plugin.SEdata.getIntVarList();
+		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+deleteNode)){
 			if (tempIntVarList.containsKey(args[0]) || tempStringVarList.containsKey(args[0]) || tempSetVarList.containsKey(args[0])) {
 				if (tempStringVarList.containsKey(args[0])) {
@@ -1382,7 +1377,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete Variable!");
+						SEutils.SElog(3, "Couldn't delete Variable!");
 						result = false;				
 					}
 				}
@@ -1397,7 +1392,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete Variable!");
+						SEutils.SElog(3, "Couldn't delete Variable!");
 						result = false;				
 					}	
 				}	
@@ -1413,7 +1408,7 @@ public class SEcommander {
 						result = true;
 					}
 					catch (Exception e){
-						utils.SElog(3, "Couldn't delete Variable!");
+						SEutils.SElog(3, "Couldn't delete Variable!");
 						result = false;				
 					}	
 				}
@@ -1431,10 +1426,12 @@ public class SEcommander {
 	public boolean variableEdit(CommandSender sender, String[] args) {
 		boolean result = false;
 		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
-		Map<String,Integer> tempIntVarList = plugin.SEdata.getIntVarList();
+		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
-		Player player = senderToPlayer(sender);
+		String senderName = utils.getSenderName(sender);
+		Player player = utils.senderToPlayer(sender);
+		
 		if(checkPermission(player, seNode+variableNode+editNode)){
 			if (args.length == 3 || args.length == 4) {
 			
@@ -1452,7 +1449,7 @@ public class SEcommander {
 									utils.SEmessage(sender, "Value changed!");
 								result = true;
 							} catch (Exception e) {
-								utils.SElog(3, "Couldn't change value!");
+								SEutils.SElog(3, "Couldn't change value!");
 								result = false;
 							}
 						}
@@ -1477,7 +1474,7 @@ public class SEcommander {
 							if (intArgs) {
 								try {
 									
-									tempIntVarList.put(args[1], value);
+									tempIntVarList.put(args[1], new SEinteger(args[1], senderName, value));
 									plugin.SEdata.setIntVarList(tempIntVarList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();
@@ -1486,7 +1483,7 @@ public class SEcommander {
 									result = true;
 									
 								} catch (Exception e) {
-									utils.SElog(3, "Couldn't change value!");
+									SEutils.SElog(3, "Couldn't change value!");
 									result = false;				
 								}	
 							} else {
@@ -1534,7 +1531,7 @@ public class SEcommander {
 										utils.SEmessage(player, "Value changed!");
 										
 										if (plugin.SEdata.getDebugees(player))
-											utils.SElog(1, args[1]+": "+plugin.SEdata.getSetVarList().get(args[1]).toString()); // debug
+											SEutils.SElog(1, args[1]+": "+plugin.SEdata.getSetVarList().get(args[1]).toString()); // debug
 									}
 										
 									
@@ -1542,7 +1539,7 @@ public class SEcommander {
 									//utils.SElog(1, args[0]+": "+plugin.SEdata.getSetVarList().get(args[0]).toString()); // debug
 								}
 							} catch (Exception e) {
-								utils.SElog(3, "Couldn't change value!");
+								SEutils.SElog(3, "Couldn't change value!");
 								result = false;				
 							}
 						} else {
@@ -1564,10 +1561,10 @@ public class SEcommander {
 	public boolean variableList(CommandSender sender, String[] args) {
 		boolean result = false;
 		Map<String,String> tempStringVarList = plugin.SEdata.getStringVarList();
-		Map<String,Integer> tempIntVarList = plugin.SEdata.getIntVarList();
+		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,Set<String>> tempSetVarList = plugin.SEdata.getSetVarList();
 		
-		Player player = senderToPlayer(sender);
+		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+listNode)){
 			if (args.length == 1) {
 			

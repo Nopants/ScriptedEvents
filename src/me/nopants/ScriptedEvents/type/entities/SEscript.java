@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SEscript extends SEentity {
+	private static final long serialVersionUID = 1L;
+	
 	private Map<Integer, String> actionList = new HashMap<Integer, String>();
 	private File scriptFile;
 	

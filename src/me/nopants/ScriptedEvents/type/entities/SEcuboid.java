@@ -6,6 +6,8 @@ import me.nopants.ScriptedEvents.type.SEorientation;
 import org.bukkit.Location;
 
 public class SEcuboid extends SEentity {
+	private static final long serialVersionUID = 1L;
+	
 	private String world;  
 	private Location cuboidCorner1;
 	private Location cuboidCorner2;

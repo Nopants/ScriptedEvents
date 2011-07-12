@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SEcondition extends SEentity {
+	private static final long serialVersionUID = 1L;
+	
 	public static enum logicalOperator {and, or, none};
 	private logicalOperator operator;
 	private Map<Integer, String> conditionList = new HashMap<Integer, String>();

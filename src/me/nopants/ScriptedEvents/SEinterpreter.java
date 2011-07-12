@@ -14,6 +14,7 @@ import me.nopants.ScriptedEvents.type.entities.SEcuboid;
 import me.nopants.ScriptedEvents.type.entities.SEscript;
 import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
+import me.nopants.ScriptedEvents.type.entities.variables.SEinteger;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -330,14 +331,14 @@ public class SEinterpreter extends Thread {
 	
 	public void sendError(String expression, String error) {
 		if (expression != null && workingPlace != null) {
-			utils.SElog(2, "\""+expression+"\": "+error+" in line: "+workingLine+" ("+workingPlace+")");
+			SEutils.SElog(2, "\""+expression+"\": "+error+" in line: "+workingLine+" ("+workingPlace+")");
 			return;
 		}
 		if (workingPlace != null) {
-			utils.SElog(2, error+" in line: "+workingLine+" ("+workingPlace+")");
+			SEutils.SElog(2, error+" in line: "+workingLine+" ("+workingPlace+")");
 			return;
 		}
-		utils.SElog(2, error+" in line: "+workingLine);
+		SEutils.SElog(2, error+" in line: "+workingLine);
 	}
 	
 	// executes the interpreters script
@@ -755,13 +756,14 @@ public class SEinterpreter extends Thread {
 												
 											
 											// resolve user-defined Integer variables
-											Map<String,Integer> tempIntegers = SEdata.getIntVarList();
+											Map<String,SEinteger> tempIntegers = SEdata.getIntVarList();
 											if (tempIntegers != null) {
 												for ( Iterator<String> i = tempIntegers.keySet().iterator(); i.hasNext(); ) {
 													String tempVar = (String) i.next();
 													// utils.SElog(1, expression+" = "+ "<"+tempVar+">"); // debug
 													if (expression.equals("<"+tempVar+">")) {
-														result = String.valueOf(tempIntegers.get(tempVar));
+														SEutils.SElog(1, "value: "+tempIntegers.get(tempVar).getValue());
+														result = String.valueOf(tempIntegers.get(tempVar).getValue());
 													}
 												}
 											}
@@ -1011,7 +1013,7 @@ public class SEinterpreter extends Thread {
 					sleep(10);
 					//utils.SElog(1, "waiting"); // debug
 				} catch (InterruptedException e) {
-					utils.SElog(3, sleep);
+					SEutils.SElog(3, sleep);
 				}
 			}	
 		}
@@ -1207,7 +1209,7 @@ public class SEinterpreter extends Thread {
 					targetPlayer.playEffect(targetPlayer.getLocation(), effect, 0);	
 				}
 			} catch (Exception e) {
-				utils.SElog(2, "\""+input[1]+"\": Unvalid effect given in line :" +this.scriptLine);
+				SEutils.SElog(2, "\""+input[1]+"\": Unvalid effect given in line :" +this.scriptLine);
 			}
 		}
 	}
@@ -1266,7 +1268,7 @@ public class SEinterpreter extends Thread {
 				try {
 					sleep(Integer.valueOf(inputToInteger(name, input[0])));
 				} catch (InterruptedException e) {
-					utils.SElog(3, sleep);
+					SEutils.SElog(3, sleep);
 				}	
 			}
 		}
@@ -1384,7 +1386,7 @@ public class SEinterpreter extends Thread {
 			try {
 				result = String.valueOf(utils.calc(input[0]));
 			} catch (Exception e) {
-				utils.SElog(2, "Calculation failed in line: "+this.workingLine);
+				SEutils.SElog(2, "Calculation failed in line: "+this.workingLine);
 			}
 		}
 		return result;
@@ -1604,7 +1606,7 @@ public class SEinterpreter extends Thread {
 		String result = "null";
 		if (checkInput(name, input.length == 2 || input.length == 3)) {
 			if (inputToPlayer(name, input[0]) != null && inputToInteger(name, input[1]) != "null") {
-				utils.SElog(1, "test");
+				SEutils.SElog(1, "test");
 				Player targetPlayer = inputToPlayer(name, input[0]);
 				int type = Integer.valueOf(inputToInteger(name, input[1]));
 				int amount = 1;
