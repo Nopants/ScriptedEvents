@@ -1,14 +1,13 @@
-package me.nopants.ScriptedEvents.type;
+package me.nopants.ScriptedEvents.type.entities;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SEcondition {
+public class SEcondition extends SEentity {
 	public static enum logicalOperator {and, or, none};
 	private logicalOperator operator;
 	private Map<Integer, String> conditionList = new HashMap<Integer, String>();
-	private String name;
 	private File conditionFile;
 	
 	public SEcondition(File newFile, String newName, logicalOperator newOperator, Map<Integer, String> newConditionList) {
@@ -17,17 +16,9 @@ public class SEcondition {
 		this.conditionFile = newFile;
 		this.operator = newOperator;
 	}
-	
-	public void setName(String newName) {
-		this.name = newName;
-	}
-	
+		
 	public logicalOperator getOperator(){
 		return this.operator;
-	}
-	
-	public String getName() {
-		return this.name;
 	}
 	
 	public void setConditionList(Map<Integer, String> newConditionList) {

@@ -1,16 +1,14 @@
-package me.nopants.ScriptedEvents.type;
+package me.nopants.ScriptedEvents.type.entities;
 
+
+import me.nopants.ScriptedEvents.type.SEorientation;
 
 import org.bukkit.Location;
 
-public class SEcuboid {
+public class SEcuboid extends SEentity {
 	private String world;  
 	private Location cuboidCorner1;
 	private Location cuboidCorner2;
-	private String name;
-	//private SEutils utils = plugin.utils;
-
-	// public SEOrientation Orientation = new SEOrientation(null, null, null);
 
 	// constructor
 	public SEcuboid(String newWorld, String newName, Location newCuboidCorner1, Location newCuboidCorner2) {
@@ -46,16 +44,6 @@ public class SEcuboid {
 	public String toString() { 
 		//SEutils parser = new SEutils();		
 		return ("world:"+world+",name:"+name+",vertex1:"+cuboidCorner1.getBlockX()+";"+cuboidCorner1.getBlockY()+";"+cuboidCorner1.getBlockZ()+",vertex2:"+cuboidCorner2.getBlockX()+";"+cuboidCorner2.getBlockY()+";"+cuboidCorner2.getBlockZ());
-	}
-
-	// sets the cuboids name
-	public void setName(String newName){
-		this.name = newName;
-	}
-	
-	// returns the cuboids name
-	public String getName(){
-		return this.name;
 	}
 
 	// sets the corner with 'cornerID' of the cuboid

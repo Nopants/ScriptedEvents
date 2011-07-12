@@ -15,11 +15,11 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
-import me.nopants.ScriptedEvents.type.SEcondition;
-import me.nopants.ScriptedEvents.type.SEcuboid;
 import me.nopants.ScriptedEvents.type.SEentitySet;
-import me.nopants.ScriptedEvents.type.SEscript;
-import me.nopants.ScriptedEvents.type.SEtrigger;
+import me.nopants.ScriptedEvents.type.entities.SEcondition;
+import me.nopants.ScriptedEvents.type.entities.SEcuboid;
+import me.nopants.ScriptedEvents.type.entities.SEscript;
+import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

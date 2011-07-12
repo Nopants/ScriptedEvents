@@ -1,6 +1,10 @@
 package me.nopants.ScriptedEvents.type;
 
-import me.nopants.ScriptedEvents.type.SEtrigger.triggerEvent;
+import me.nopants.ScriptedEvents.type.entities.SEcondition;
+import me.nopants.ScriptedEvents.type.entities.SEcuboid;
+import me.nopants.ScriptedEvents.type.entities.SEscript;
+import me.nopants.ScriptedEvents.type.entities.SEtrigger;
+import me.nopants.ScriptedEvents.type.entities.SEtrigger.triggerEvent;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

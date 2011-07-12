@@ -1,8 +1,8 @@
 package me.nopants.ScriptedEvents;
 
-import me.nopants.ScriptedEvents.type.SEcuboid;
 import me.nopants.ScriptedEvents.type.SEentitySet;
-import me.nopants.ScriptedEvents.type.SEtrigger;
+import me.nopants.ScriptedEvents.type.entities.SEcuboid;
+import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 
 import org.bukkit.Location;
 

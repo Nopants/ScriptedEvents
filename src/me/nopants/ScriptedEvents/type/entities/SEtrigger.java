@@ -1,10 +1,11 @@
-package me.nopants.ScriptedEvents.type;
+package me.nopants.ScriptedEvents.type.entities;
+
+import me.nopants.ScriptedEvents.type.SEentitySet;
 
 
-public class SEtrigger {
+public class SEtrigger extends SEentity {
 	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, onBlockBreak, onBlockPlace, onRespawn, none};
 	triggerEvent event;
-	private String name;
 	private String triggerCommand;
 	private SEcuboid triggerCuboid;
 	private SEscript triggerScript;
@@ -17,14 +18,6 @@ public class SEtrigger {
 		this.triggerCondition = entitySet.condition;
 		this.triggerScript = entitySet.script;
 		this.triggerCommand = entitySet.command;
-	}
-	
-	public void setName(String newName) {
-		this.name = newName;
-	}
-	
-	public String getName() {
-		return  this.name;
 	}
 	
 	/*

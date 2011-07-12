@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import me.nopants.ScriptedEvents.type.SEcondition;
-import me.nopants.ScriptedEvents.type.SEcuboid;
 import me.nopants.ScriptedEvents.type.SEentitySet;
-import me.nopants.ScriptedEvents.type.SEscript;
-import me.nopants.ScriptedEvents.type.SEtrigger;
-import me.nopants.ScriptedEvents.type.SEcondition.logicalOperator;
+import me.nopants.ScriptedEvents.type.entities.SEcondition;
+import me.nopants.ScriptedEvents.type.entities.SEcuboid;
+import me.nopants.ScriptedEvents.type.entities.SEscript;
+import me.nopants.ScriptedEvents.type.entities.SEtrigger;
+import me.nopants.ScriptedEvents.type.entities.SEcondition.logicalOperator;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;

@@ -20,9 +20,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 */
 
-import me.nopants.ScriptedEvents.type.SEcuboid;
 import me.nopants.ScriptedEvents.type.SEentitySet;
-import me.nopants.ScriptedEvents.type.SEtrigger;
+import me.nopants.ScriptedEvents.type.entities.SEcuboid;
+import me.nopants.ScriptedEvents.type.entities.SEtrigger;
 
 public class SEtriggerManager {
 	private SEdataManager SEdata;

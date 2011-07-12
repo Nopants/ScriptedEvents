@@ -1,12 +1,11 @@
-package me.nopants.ScriptedEvents.type;
+package me.nopants.ScriptedEvents.type.entities;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SEscript {
+public class SEscript extends SEentity {
 	private Map<Integer, String> actionList = new HashMap<Integer, String>();
-	private String name;
 	private File scriptFile;
 	
 	public SEscript(File newFile, String newName, Map<Integer, String> newActionList) {
@@ -14,15 +13,7 @@ public class SEscript {
 		this.name = newName;
 		this.scriptFile = newFile;
 	}
-	
-	public void setName(String newName) {
-		this.name = newName;
-	}
-	
-	public String getName() {
-		return this.name;
-	}
-	
+		
 	public void setActionList(Map<Integer, String> newActionList) {
 		this.actionList = newActionList;
 	}
