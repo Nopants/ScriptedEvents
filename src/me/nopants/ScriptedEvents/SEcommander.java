@@ -56,8 +56,6 @@ public class SEcommander {
 		this.hasPermissions = plugin.hasPermissions; 
 	}
 
-
-
 	public boolean checkPermission(CommandSender sender, String permission){
 		boolean result = false;
 		
@@ -1567,16 +1565,30 @@ public class SEcommander {
 		
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+variableNode+listNode)){
-			if (args.length == 1) {
+			if (args.length == 1 || args.length == 2) {
 			
-				if (args[0].equalsIgnoreCase("int")) {
-					player.sendMessage(tempIntVarList.keySet().toString());
+				if (args.length == 1) {
+					if (args[0].equalsIgnoreCase("int")) {
+						player.sendMessage(tempIntVarList.keySet().toString());
+					}
+					if (args[0].equalsIgnoreCase("string")) {
+						player.sendMessage(tempStringVarList.keySet().toString());
+					}
+					if (args[0].equalsIgnoreCase("set")) {
+						player.sendMessage(tempSetVarList.keySet().toString());
+					}	
 				}
-				if (args[0].equalsIgnoreCase("string")) {
-					player.sendMessage(tempStringVarList.keySet().toString());
-				}
-				if (args[0].equalsIgnoreCase("set")) {
-					player.sendMessage(tempSetVarList.keySet().toString());
+				
+				if (args.length == 2) {
+					if (args[0].equalsIgnoreCase("int") && tempIntVarList.get(args[1]) != null) {
+						player.sendMessage(tempIntVarList.get(args[1]).getName() + ": " + tempIntVarList.get(args[1]).getValue());
+					}
+					if (args[0].equalsIgnoreCase("string") && tempStringVarList.get(args[1]) != null) {
+						player.sendMessage(tempStringVarList.get(args[1]).getName() + ": " + tempStringVarList.get(args[1]).getValue());
+					}
+					if (args[0].equalsIgnoreCase("set") && tempSetVarList.get(args[1]) != null) {
+						player.sendMessage(tempSetVarList.get(args[1]).getName() + ": " + tempSetVarList.get(args[1]).getValues().toString());
+					}
 				}
 				
 			} else {
