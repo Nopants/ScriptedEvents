@@ -644,13 +644,14 @@ public class SEcommander {
 	public boolean cuboidCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
+		String senderName = utils.getSenderName(sender);
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+cuboidNode+createNode)){
 			if (args.length == 1) {
 				if (player!=null) {
 					if (!plugin.SEdata.getCuboidList().containsKey(args[0])) {
 						if ((plugin.playerListener.getVertex1(player)!=null)&&(plugin.playerListener.getVertex2(player)!=null)) {
-							SEcuboid saveCuboid = new SEcuboid(player.getWorld().getName(), args[0], plugin.playerListener.getVertex1(player), plugin.playerListener.getVertex2(player));
+							SEcuboid saveCuboid = new SEcuboid(player.getWorld().getName(), args[0], senderName, plugin.playerListener.getVertex1(player), plugin.playerListener.getVertex2(player), null);
 							plugin.SEdata.writeCuboid(saveCuboid.toString());
 							utils.SEmessage(player, "Cuboid '"+args[0]+"' created!");
 							plugin.SEdata.refreshMainCuboidList();
@@ -752,6 +753,7 @@ public class SEcommander {
 	public boolean triggerCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
+		String senderName = utils.getSenderName(sender);
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+triggerNode+createNode)){
 			if (args.length == 1) {
@@ -760,7 +762,7 @@ public class SEcommander {
 					// create a blank trigger with 'name' and 'ID'
 					SEentitySet entitySet = new SEentitySet();
 					entitySet.name = args[0];
-					SEtrigger newTrigger = new SEtrigger(entitySet);
+					SEtrigger newTrigger = new SEtrigger(entitySet, senderName, null);
 				
 					// and update it to the dataManager and trigger.yml
 					plugin.SEdata.writeTrigger(newTrigger.toString());
@@ -853,16 +855,17 @@ public class SEcommander {
 	public boolean scriptCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
+		String senderName = utils.getSenderName(sender);
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+scriptNode+createNode)){
 			if (args.length == 1) {
 				if (!plugin.SEdata.getScriptList().containsKey(args[0])) {
 															
 					File newScriptFile = new File(SEdataManager.scriptDirectory + File.separator + args[0] + ".script");
-					SEscript newScript = new SEscript(newScriptFile, args[0], new HashMap<Integer, String>());
+					SEscript newScript = new SEscript(newScriptFile, args[0], senderName, new HashMap<Integer, String>(), null);
 					if (!newScriptFile.exists()) {
 						plugin.SEdata.rewriteScript(newScript);
-						plugin.SEdata.refreshScriptList();
+						plugin.SEdata.refreshMainScriptList();
 						plugin.SEdata.utils.SEmessage(sender, "Script '"+args[0]+"' created!");
 						result = true;
 					} else {
@@ -897,7 +900,7 @@ public class SEcommander {
 						plugin.SEdata.getScriptList().get(args[0]).getScriptFile().delete();
 						plugin.SEdata.getScriptList().remove(args[0]);
 						plugin.SEdata.rewriteAllScriptFiles();
-						plugin.SEdata.refreshScriptList();
+						plugin.SEdata.refreshMainScriptList();
 						
 						utils.SEmessage(sender, "Script deleted!");
 						result = true;
@@ -955,16 +958,17 @@ public class SEcommander {
 	public boolean conditionCreate(CommandSender sender, String[] args) {
 		boolean result = false;
 		
+		String senderName = utils.getSenderName(sender);
 		Player player = utils.senderToPlayer(sender);
 		if(checkPermission(player, seNode+conditionNode+createNode)){
 			if (args.length == 1) {
 				if (!plugin.SEdata.getConditionList().containsKey(args[0])) {
 															
 					File newConditionFile = new File(SEdataManager.conditionDirectory + File.separator + args[0] + ".condition");
-					SEcondition newCondition = new SEcondition(newConditionFile, args[0], logicalOperator.and, new HashMap<Integer, String>());
+					SEcondition newCondition = new SEcondition(newConditionFile, args[0], senderName, logicalOperator.and, new HashMap<Integer, String>(), null);
 					if (!newConditionFile.exists()) {
 						plugin.SEdata.rewriteCondition(newCondition);
-						plugin.SEdata.refreshConditionList();
+						plugin.SEdata.refreshMainConditionList();
 						plugin.SEdata.utils.SEmessage(sender, "Condition '"+args[0]+"' created!");
 						result = true;
 					} else {
@@ -998,7 +1002,7 @@ public class SEcommander {
 						plugin.SEdata.getConditionList().get(args[0]).getConditionFile().delete();
 						plugin.SEdata.getConditionList().remove(args[0]);
 						plugin.SEdata.rewriteAllConditionFiles();
-						plugin.SEdata.refreshConditionList();
+						plugin.SEdata.refreshMainConditionList();
 						
 						utils.SEmessage(sender, "Condition deleted!");
 						result = true;
@@ -1074,7 +1078,7 @@ public class SEcommander {
 								Map<String,SEstring> tempList = plugin.SEdata.getStringVarList();
 								String value = args[2]; // plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 								
-								tempList.put(args[1], new SEstring(args[1], senderName, value));
+								tempList.put(args[1], new SEstring(args[1], senderName, value, null));
 								plugin.SEdata.setStringVarList(tempList);
 								plugin.SEdata.rewriteStringVarFile();
 								plugin.SEdata.refreshStringVarList();
@@ -1106,7 +1110,7 @@ public class SEcommander {
 								if (!plugin.SEdata.variableExists(args[1])) {
 									
 									Map<String,SEinteger> tempList = plugin.SEdata.getIntVarList();
-									tempList.put(args[1], new SEinteger(args[1],senderName, value));
+									tempList.put(args[1], new SEinteger(args[1],senderName, value, null));
 									plugin.SEdata.setIntVarList(tempList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();
@@ -1132,7 +1136,7 @@ public class SEcommander {
 								
 								Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 								
-								tempSetVarList.put(args[1], new SEset(args[1], senderName, new HashSet<String>()));
+								tempSetVarList.put(args[1], new SEset(args[1], senderName, new HashSet<String>(), null));
 								
 								plugin.SEdata.setSetVarList(tempSetVarList);
 								
@@ -1236,7 +1240,6 @@ public class SEcommander {
 		Map<String,SEinteger> tempIntVarList = plugin.SEdata.getIntVarList();
 		Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 		
-		String senderName = utils.getSenderName(sender);
 		Player player = utils.senderToPlayer(sender);
 		
 		if(checkPermission(player, seNode+variableNode+editNode)){
@@ -1247,7 +1250,8 @@ public class SEcommander {
 					if (args[0].equalsIgnoreCase("string")) {
 						if (tempStringVarList.containsKey(args[1])) {
 							try {
-								tempStringVarList.put(args[1], new SEstring(args[1], senderName, args[2]));
+								String oldOwner = tempStringVarList.get(args[1]).getOwner();
+								tempStringVarList.put(args[1], new SEstring(args[1], oldOwner, args[2], null));
 								plugin.SEdata.setStringVarList(tempStringVarList);
 								plugin.SEdata.rewriteStringVarFile();
 								plugin.SEdata.refreshStringVarList();
@@ -1280,8 +1284,8 @@ public class SEcommander {
 							
 							if (intArgs) {
 								try {
-									
-									tempIntVarList.put(args[1], new SEinteger(args[1], senderName, value));
+									String oldOwner = tempIntVarList.get(args[1]).getOwner();
+									tempIntVarList.put(args[1], new SEinteger(args[1], oldOwner, value, null));
 									plugin.SEdata.setIntVarList(tempIntVarList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();

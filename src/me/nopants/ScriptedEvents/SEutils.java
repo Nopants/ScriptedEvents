@@ -186,7 +186,7 @@ public class SEutils {
 	}
 
 	// returns the trigger which is represented by the input-string
-	public SEtrigger stringToTrigger(String input){
+	public SEtrigger stringToTrigger(String packageName, String input){
 		SEtrigger result = null;
 		//trigger1: name:Test1,event:none(),script:none
 		//trigger2: name:Test2,event:onInteractAt(),script:myInteractScript
@@ -203,19 +203,25 @@ public class SEutils {
 			SEcondition triggerCondition;
 			SEscript triggerScript;
 			String triggerName;
+			String triggerOwner;
 			
-			if (       (triggerStrings.length == 4)
+			if (       (triggerStrings.length == 5)
 					&& (triggerStrings[0].startsWith("name:"))
-					&& (triggerStrings[1].startsWith("event:"))
-					&& (triggerStrings[2].startsWith("condition:"))
-					&& (triggerStrings[3].startsWith("script:"))) {
+					&& (triggerStrings[1].startsWith("owner:"))
+					&& (triggerStrings[2].startsWith("event:"))
+					&& (triggerStrings[3].startsWith("condition:"))
+					&& (triggerStrings[4].startsWith("script:"))) {
 
 				// Name
 				triggerName = triggerStrings[0].substring(5);
 				//SElog(1, "TriggerName: "+triggerName); // debug
 				
+				// Owner
+				triggerOwner = triggerStrings[1].substring(6);
+				//SElog(1, "TriggerOwner: "+triggerOwner); // debug
+				
 				// Event
-				temp = triggerStrings[1].substring(6);
+				temp = triggerStrings[2].substring(6);
 				if (temp.contains("(") && temp.contains(")"))
 					temp = temp.substring(0, temp.indexOf('('));
 				event = stringToEvent(temp);
@@ -223,23 +229,26 @@ public class SEutils {
 				
 				// Command (temp=command)
 				if (event == SEtrigger.triggerEvent.onCommand){
-				temp = triggerStrings[1];
+				temp = triggerStrings[2];
 					if (!temp.contains("()")) {
-						temp = triggerStrings[1].substring(temp.indexOf('('));
+						temp = triggerStrings[2].substring(temp.indexOf('('));
 						temp = temp.substring(1, temp.length()-1);
 						triggerCommand = temp;
 						//SElog(1, "TriggerCommand: "+temp); // debug
 					} else triggerCommand = null;
 				} else triggerCommand = null;
 				
-				// Cuboid (temp=cuboid-ID)
+				// Cuboid (temp=cuboid-name)
 				if ((event == SEtrigger.triggerEvent.onEnter) || (event == SEtrigger.triggerEvent.onLeave)) {
-				temp = triggerStrings[1];
+				temp = triggerStrings[2];
 					if (!temp.contains("()")) {
-						temp = triggerStrings[1].substring(temp.indexOf('('));
+						temp = triggerStrings[2].substring(temp.indexOf('('));
 						temp = temp.substring(1, temp.length()-1);
 						try {
-							triggerCuboid = SEdata.getCuboidList().get(temp);
+							if (packageName == null)
+								triggerCuboid = SEdata.getCuboidList().get(temp);
+							else
+								triggerCuboid = SEdata.getCuboidList().get(packageName+"."+temp);
 							// SElog(1, "TriggerCuboid: "+triggerCuboid.getName()); // debug
 						} catch (Exception e) {
 							triggerCuboid = null;
@@ -248,27 +257,33 @@ public class SEutils {
 				} else triggerCuboid = null;
 
 				// Condition (temp=condition-name)
-				if (triggerStrings[2].length()>10) {
-					temp = triggerStrings[2].substring(10);
+				if (triggerStrings[3].length()>10) {
+					temp = triggerStrings[3].substring(10);
 					try {
-						triggerCondition = SEdata.getConditionList().get(temp);
+						if (packageName == null)
+							triggerCondition = SEdata.getConditionList().get(temp);
+						else
+							triggerCondition = SEdata.getConditionList().get(packageName+"."+temp);
 					} catch (Exception e) {
 						triggerCondition = null;
 					}	
 				} else triggerCondition = null;
 				
 				// Script (temp=script-name)
-				if (triggerStrings[3].length()>7) {
-					temp = triggerStrings[3].substring(7);
+				if (triggerStrings[4].length()>7) {
+					temp = triggerStrings[4].substring(7);
 					try {
-						triggerScript = SEdata.getScriptList().get(temp);
+						if (packageName == null)
+							triggerScript = SEdata.getScriptList().get(temp);
+						else
+							triggerScript = SEdata.getScriptList().get(packageName+"."+temp);
 						//SElog(1, "TriggerScript: "+triggerScript.getName()); // debug
 					} catch (Exception e) {
 						triggerScript = null;
 					}	
 				} else triggerScript = null;
 				
-				result = new SEtrigger(new SEentitySet(triggerName, event, triggerCuboid, triggerCondition, triggerScript, triggerCommand));
+				result = new SEtrigger(new SEentitySet(triggerName, event, triggerCuboid, triggerCondition, triggerScript, triggerCommand), triggerOwner, packageName);
 			} else result = null;
 			
 		} else result = null;
@@ -277,28 +292,31 @@ public class SEutils {
 	}
 	
 	// returns the cuboid which is represented by the input-string
-	public SEcuboid stringToCuboid(String input){
+	public SEcuboid stringToCuboid(String packageName, String input){
 		SEcuboid result = null;
 		// input = world:world,name:Static Cuboid,vertex1:347;92;470,vertex2:350;92;468;
 		if (input != null) {
 			
 			String world;
 			String name;
+			String owner;
 			Location corner1;
 			Location corner2;
 			String[] cuboidStrings = input.split(",");
 			
-			if ((cuboidStrings.length == 4)
+			if ((cuboidStrings.length == 5)
 					&&(cuboidStrings[0].startsWith("world:"))
 					&&(cuboidStrings[1].startsWith("name:"))
+					&&(cuboidStrings[1].startsWith("owner:"))
 					&&(cuboidStrings[2].startsWith("vertex1:"))
 					&&(cuboidStrings[3].startsWith("vertex2:"))) {
 			
 				world = cuboidStrings[0].substring(6);
 				name = cuboidStrings[1].substring(5);
-				corner1 = stringToLocation(cuboidStrings[2].substring(8));
-				corner2 = stringToLocation(cuboidStrings[3].substring(8));
-				result = new SEcuboid(world, name, corner1, corner2);		
+				owner = cuboidStrings[2].substring(6);
+				corner1 = stringToLocation(cuboidStrings[3].substring(8));
+				corner2 = stringToLocation(cuboidStrings[4].substring(8));
+				result = new SEcuboid(world, name, owner, corner1, corner2, packageName);		
 			} else result = null;
 			
 		} else result = null;

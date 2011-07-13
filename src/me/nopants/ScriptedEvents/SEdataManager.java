@@ -30,12 +30,12 @@ import org.bukkit.util.config.Configuration;
 
 public class SEdataManager {
 
-	static String mainDirectory = "plugins/ScriptedEvents";
-	static String packageDirectory = mainDirectory+"/packages";
-	static String conditionDirectory = mainDirectory+"/conditions";
-	static String scriptDirectory = mainDirectory+"/scripts";
-	static String variableDirectory = mainDirectory+"/variables";
-	static String setDirectory = variableDirectory + "/sets";
+	static String mainDirectory = "plugins" + File.separator + "ScriptedEvents";
+	static String packageDirectory = mainDirectory + File.separator + "packages";
+	static String conditionDirectory = mainDirectory + File.separator + "conditions";
+	static String scriptDirectory = mainDirectory + File.separator + "scripts";
+	static String variableDirectory = mainDirectory + File.separator + "variables";
+	static String setDirectory = variableDirectory + File.separator + "sets";
 	static File configFile = new File(mainDirectory + File.separator + "config.yml");
 	static File cuboidFile = new File(mainDirectory + File.separator + "cuboid.dat");
 	static File triggerFile = new File(mainDirectory + File.separator + "trigger.dat");
@@ -98,12 +98,12 @@ public class SEdataManager {
 			}
 		}
 		
-		refreshConfig();
-		refreshPackages();
-		refreshMainCuboidList();
-		refreshConditionList();
-		refreshScriptList();
-		refreshMainTriggerList();
+		refreshConfig(); //ready
+		refreshPackages(); //ready
+		refreshMainCuboidList(); //ready
+		refreshMainConditionList();
+		refreshMainScriptList();
+		refreshMainTriggerList(); //ready
 		refreshStringVarList();
 		refreshIntVarList();
 		refreshSetVarList();
@@ -246,7 +246,7 @@ public class SEdataManager {
 	//---------------------//
 		
 	// returns a SEcondition with the information of a conditionFile
-	public SEcondition loadConditionFile(File conditionFile) {
+	public SEcondition loadConditionFile(String packageName, File conditionFile) {
 		
 		// make a blank conditionList
 		Map<Integer, String> conList = new HashMap<Integer, String>();
@@ -267,11 +267,11 @@ public class SEdataManager {
 		// get the name of the condition
 		String temp = conditionFile.getName();
 		temp = temp.substring(0, temp.lastIndexOf('.'));
-		return new SEcondition(conditionFile, temp, operator, conList);
+		return new SEcondition(conditionFile, temp, null, operator, conList, packageName);
 	}
 	
 	// returns a SEscript with the information of a scriptFile
-	public SEscript loadScriptFile(File scriptFile) {
+	public SEscript loadScriptFile(String packageName, File scriptFile) {
 		
 		// make a blank actionList
 		Map<Integer, String> actionList = new HashMap<Integer, String>();
@@ -291,7 +291,7 @@ public class SEdataManager {
 		// get the name of the script
 		String temp = scriptFile.getName();
 		temp = temp.substring(0, temp.lastIndexOf('.'));
-		return new SEscript(scriptFile, temp, actionList);
+		return new SEscript(scriptFile, temp, null, actionList, packageName);
 	}
 	
 	//---------------------//
@@ -321,49 +321,99 @@ public class SEdataManager {
 		}
 	}
 	
-	// does a refresh on the list of condition
-	public void refreshConditionList() {
-		try {
-			// if there is a list, delete it
-			if (!(conditionList.isEmpty()))
-				conditionList = new HashMap<String, SEcondition>();
-
-			// get all files in conditionDirectory which end on .condition
-			File dir = new File(conditionDirectory);
-			File[] conditionFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".condition" );} } );
-			
-			// loop over all .condition-files
-			for(int i = 0; i < conditionFileList.length; i++) {
-				// save the script into scriptList
-				SEcondition tempCondition = loadConditionFile(conditionFileList[i]);
-				conditionList.put(tempCondition.getName(), tempCondition) ;
-			}
-			
-		} catch (Exception ex) {
-			SEutils.SElog(3, "Failed to load condition!");
+	// does a refresh on the main list of triggers
+ 	public void refreshMainConditionList() {
+ 	// if there is a list, delete it
+		if (!(conditionList.isEmpty()))
+			conditionList.clear();
+		
+		addConditionList(null);
+		
+		Iterator<String> lauf = packages.keySet().iterator();
+		while (lauf.hasNext()) {
+			addConditionList(lauf.next());
 		}
+		
 	}
 	
 	// does a refresh on the list of scripts
-	public void refreshScriptList() {
+	public void addConditionList(String packageName) {
+		String path;
+		
+		if (packageName == null) {
+ 			path = conditionDirectory;
+ 		} else {
+ 			String packagePath = packages.get(packageName);
+ 			path = packagePath + File.separator + "conditions";
+ 		}
+		
 		try {
-			// if there is a list, delete it
-			if (!(scriptList.isEmpty()))
-				scriptList = new HashMap<String, SEscript>();
-
-			// get all files in scriptDirectory which end on .script
-			File dir = new File(scriptDirectory);
-			File[] scriptFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".script" );} } );
-			
-			// loop over all .script-files
-			for(int i = 0; i < scriptFileList.length; i++) {
-				// save the script into scriptList
-				SEscript tempScript = loadScriptFile(scriptFileList[i]);
-				scriptList.put(tempScript.getName(), tempScript) ;
+			// get all files in conditionDirectory which end on .condition			
+			File dir = new File(path);
+			File[] conditionFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".condition" );} } );
+			if (conditionFileList != null) {
+				// loop over all .condition-files
+				for(int i = 0; i < conditionFileList.length; i++) {
+					// save the condition into conditionList
+					SEcondition tempCondition = loadConditionFile(packageName, conditionFileList[i]);
+					if (packageName != null)
+						tempCondition.setName(packageName+"."+tempCondition.getName());
+					conditionList.put(tempCondition.getName(), tempCondition) ;
+				}	
 			}
-			
 		} catch (Exception ex) {
-			SEutils.SElog(3, "Failed to load scripts!");
+			if (packageName == null)
+				SEutils.SElog(3, "Failed to load conditions!");
+			else
+				SEutils.SElog(3, "Failed to load conditions, in package '"+packageName+"'!");
+		}
+	}
+	
+	// does a refresh on the main list of triggers
+ 	public void refreshMainScriptList() {
+ 	// if there is a list, delete it
+		if (!(scriptList.isEmpty()))
+			scriptList.clear();
+		
+		addScriptList(null);
+		
+		Iterator<String> lauf = packages.keySet().iterator();
+		while (lauf.hasNext()) {
+			addScriptList(lauf.next());
+		}
+		
+	}
+	
+	// does a refresh on the list of scripts
+	public void addScriptList(String packageName) {
+		String path;
+		
+		if (packageName == null) {
+ 			path = scriptDirectory;
+ 		} else {
+ 			String packagePath = packages.get(packageName);
+ 			path = packagePath + File.separator + "scripts";
+ 		}
+		
+		try {
+			// get all files in scriptDirectory which end on .script			
+			File dir = new File(path);
+			File[] scriptFileList = dir.listFiles(new FilenameFilter() { public boolean accept( File f, String s ) {return s.toLowerCase().endsWith( ".script" );} } );
+			if (scriptFileList != null) {
+				// loop over all .script-files
+				for(int i = 0; i < scriptFileList.length; i++) {
+					// save the script into scriptList
+					SEscript tempScript = loadScriptFile(packageName, scriptFileList[i]);
+					if (packageName != null)
+						tempScript.setName(packageName+"."+tempScript.getName());
+					scriptList.put(tempScript.getName(), tempScript) ;
+				}	
+			}
+		} catch (Exception ex) {
+			if (packageName == null)
+				SEutils.SElog(3, "Failed to load scripts!");
+			else
+				SEutils.SElog(3, "Failed to load scripts, in package '"+packageName+"'!");
 		}
 	}
 	
@@ -384,7 +434,7 @@ public class SEdataManager {
  	
  	// does a refresh on the list of triggers in a package
  	public void addTriggerList(String packageName) {
- 		Map<String,SEtrigger> list = triggerList;;
+ 		Map<String,SEtrigger> list = triggerList;
 		File file;
 		
  		if (packageName == null) {
@@ -405,7 +455,7 @@ public class SEdataManager {
 		try {	
 			Map<Integer,String> stringTriggers = read(file);
 			for (int i=1;i<=stringTriggers.size();i++) {
-				SEtrigger tempTrigger = utils.stringToTrigger(stringTriggers.get(i));
+				SEtrigger tempTrigger = utils.stringToTrigger(packageName, stringTriggers.get(i));
 				if (packageName != null)
 					tempTrigger.setName(packageName+"."+tempTrigger.getName());
 				list.put(tempTrigger.getName(), tempTrigger);
@@ -456,7 +506,7 @@ public class SEdataManager {
 		try {
 			Map<Integer,String> stringCuboids = read(file);
 			for (int i=1;i<=stringCuboids.size();i++) {
-				SEcuboid tempCuboid = utils.stringToCuboid(stringCuboids.get(i));
+				SEcuboid tempCuboid = utils.stringToCuboid(packageName, stringCuboids.get(i));
 				if (packageName != null)
 					tempCuboid.setName(packageName+"."+tempCuboid.getName());
 				list.put(tempCuboid.getName(), tempCuboid);

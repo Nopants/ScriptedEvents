@@ -1003,10 +1003,10 @@ public class SEinterpreter extends Thread {
 		}
 		
 		if (!subScriptActions.isEmpty()) {
-			SEscript subScript = new SEscript(null, "subScript", subScriptActions);
+			SEscript subScript = new SEscript(null, "subScript", script.getOwner(), subScriptActions, script.getPack());
 			SEentitySet subEntitySet = new SEentitySet();
 			subEntitySet.script = subScript;
-			SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet), entitySet, kindType.script);
+			SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner(), script.getPack()), entitySet, kindType.script);
 			interpreter.start();
 			
 			while(interpreter.isAlive()) {
@@ -1290,11 +1290,16 @@ public class SEinterpreter extends Thread {
 	public void script(String[] input) {
 		String name = "script";
 		if (checkInput(name, input.length == 1)) {
-			SEscript tempScript = inputToScript(name, input[0]);
+			SEscript tempScript;
+			if (script.getPack() == null)
+				tempScript = inputToScript(name, input[0]);
+			else
+				tempScript = inputToScript(script.getPack()+"."+name, input[0]);
+			
 			if (tempScript != null) {
 				SEentitySet subEntitySet = new SEentitySet();
 				subEntitySet.script = tempScript;
-				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet), entitySet, kindType.script);
+				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner(), script.getPack()), entitySet, kindType.script);
 				interpreter.start();	
 			}
 		}
@@ -1677,12 +1682,18 @@ public class SEinterpreter extends Thread {
 		String name = "check";
 		String result = "null";
 		boolean tempCheck = false;
-		SEcondition tempCondition = inputToCondition(name, input[0]);
+		
+		SEcondition tempCondition;
+		if (script.getPack() == null)
+			tempCondition = inputToCondition(name, input[0]);	
+		else
+			tempCondition = inputToCondition(script.getPack()+"."+name, input[0]);
+		
 		if (checkInput(name, input.length == 1)) {
 			if (tempCondition != null && tempCondition.getConditionList() != null) {
 				SEentitySet subEntitySet = new SEentitySet();
 				subEntitySet.condition = tempCondition;
-				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet), entitySet, kindType.condition);
+				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner(), script.getPack()), entitySet, kindType.condition);
 				interpreter.start();
 				while(interpreter.isWorking)
 					try {

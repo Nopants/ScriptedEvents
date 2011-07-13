@@ -8,12 +8,7 @@ public class SEentity implements Serializable {
 	String name;
 	String owner;
 	String pack;
-	
-	public SEentity(String newName, String newOwner) {
-		this.setName(newName);
-		this.setOwner(newOwner);
-	}
-	
+		
 	public SEentity(String newName, String newOwner, String newPack) {
 		this.setName(newName);
 		this.setOwner(newOwner);

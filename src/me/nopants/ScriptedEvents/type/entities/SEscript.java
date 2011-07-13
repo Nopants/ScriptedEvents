@@ -10,8 +10,8 @@ public class SEscript extends SEentity {
 	private Map<Integer, String> actionList = new HashMap<Integer, String>();
 	private File scriptFile;
 	
-	public SEscript(File newFile, String newName, Map<Integer, String> newActionList) {
-		super(newName, null);
+	public SEscript(File newFile, String newName, String newOwner, Map<Integer, String> newActionList, String newPack) {
+		super(newName, newOwner, newPack);
 		this.actionList = newActionList;
 		this.scriptFile = newFile;
 	}
