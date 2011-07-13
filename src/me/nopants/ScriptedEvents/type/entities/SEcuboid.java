@@ -13,8 +13,8 @@ public class SEcuboid extends SEentity {
 	private Location cuboidCorner2;
 
 	// constructor
-	public SEcuboid(String newWorld, String newName, String newOwner, Location newCuboidCorner1, Location newCuboidCorner2, String newPack) {
-		super(newName, newOwner, newPack);
+	public SEcuboid(String newWorld, String newName, String newOwner, Location newCuboidCorner1, Location newCuboidCorner2) {
+		super(newName, newOwner);
 		this.setCorner(1, newCuboidCorner1);
 		this.setCorner(2, newCuboidCorner2);
 		this.world = newWorld;
@@ -45,7 +45,7 @@ public class SEcuboid extends SEentity {
 	// returns a text-version of this cuboid
 	public String toString() { 
 		//SEutils parser = new SEutils();		
-		return ("world:"+world+",name:"+name+",vertex1:"+cuboidCorner1.getBlockX()+";"+cuboidCorner1.getBlockY()+";"+cuboidCorner1.getBlockZ()+",vertex2:"+cuboidCorner2.getBlockX()+";"+cuboidCorner2.getBlockY()+";"+cuboidCorner2.getBlockZ());
+		return ("world:"+world+",name:"+name+",owner:"+this.owner+",vertex1:"+cuboidCorner1.getBlockX()+";"+cuboidCorner1.getBlockY()+";"+cuboidCorner1.getBlockZ()+",vertex2:"+cuboidCorner2.getBlockX()+";"+cuboidCorner2.getBlockY()+";"+cuboidCorner2.getBlockZ());
 	}
 
 	// sets the corner with 'cornerID' of the cuboid
@@ -289,7 +289,7 @@ public class SEcuboid extends SEentity {
 
 	// returns the centerX of the cuboid as integer
 	public int getCenterX(Location playerLocation) {
-		SEcuboid tempCuboid = new SEcuboid(null,null,null,null, null, null); 
+		SEcuboid tempCuboid = new SEcuboid(null,null,null,null, null); 
 			tempCuboid = this.makeUnevenCuboid(playerLocation);
 		return (tempCuboid.getCorner(getSmallerXID()).getBlockX() + tempCuboid
 				.getRadiusX());
@@ -297,7 +297,7 @@ public class SEcuboid extends SEentity {
 
 	// returns the centerY of the cuboid as integer
 	public int getCenterY(Location playerLocation) {
-		SEcuboid tempCuboid = new SEcuboid(null,null,null,null,null,null); 
+		SEcuboid tempCuboid = new SEcuboid(null,null,null,null,null); 
 		tempCuboid = this.makeUnevenCuboid(playerLocation);
 		return (tempCuboid.getCorner(getSmallerYID()).getBlockY() + tempCuboid
 				.getRadiusY());
@@ -305,7 +305,7 @@ public class SEcuboid extends SEentity {
 
 	// returns the centerX of the cuboid as integer (has to have even length)
 	public int getCenterZ(Location playerLocation) {
-		SEcuboid tempCuboid = new SEcuboid(null,null,null,null,null,null); 
+		SEcuboid tempCuboid = new SEcuboid(null,null,null,null,null); 
 		tempCuboid = this.makeUnevenCuboid(playerLocation);
 		return (tempCuboid.getCorner(getSmallerZID()).getBlockZ() + tempCuboid
 				.getRadiusZ());
@@ -313,7 +313,7 @@ public class SEcuboid extends SEentity {
 
 	// returns an uneven cuboid relative to the playerLocation
 	public SEcuboid makeUnevenCuboid(Location playerLocation) {
-		SEcuboid tempCuboid = new SEcuboid(null,null,null,null,null,null);
+		SEcuboid tempCuboid = new SEcuboid(null,null,null,null,null);
 		tempCuboid = this;
 		Location tempLocation = playerLocation;
 		SEorientation Orientation = getPlayerCuboidOrientation(tempLocation);
@@ -387,7 +387,7 @@ public class SEcuboid extends SEentity {
 	// returns center of the cuboid as a location, relative to the
 	// playerlocation
 	public Location getRelativeCenter(Location playerLocation) {
-		SEcuboid tempCuboid = new SEcuboid(null, null, null, null,null,null);  
+		SEcuboid tempCuboid = new SEcuboid(null, null, null, null,null);  
 		Location tempLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), playerLocation.getY(), playerLocation.getZ());
 		tempCuboid = this.makeUnevenCuboid(tempLocation);
 		Location result = tempLocation;

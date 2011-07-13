@@ -34,7 +34,7 @@ public class ScriptedEvents extends JavaPlugin {
 	public void onEnable() {
 		pdfFile = this.getDescription();
 		version = pdfFile.getVersion();
-		SEdata = new SEdataManager();
+		SEdata = new SEdataManager(this);
 		utils = SEdata.utils;
 		utils.writeinlog(1, "ScriptedEvents: "+version+" enabled");
 		setupPermissions();

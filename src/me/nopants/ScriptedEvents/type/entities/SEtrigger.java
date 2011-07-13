@@ -13,8 +13,8 @@ public class SEtrigger extends SEentity {
 	private SEscript triggerScript;
 	private SEcondition triggerCondition;
 	
-	public SEtrigger(SEentitySet entitySet, String newOwner, String newPack){
-		super(entitySet.name, newOwner, newPack);
+	public SEtrigger(SEentitySet entitySet, String newOwner){
+		super(entitySet.name, newOwner);
 		this.event = entitySet.triggerEvent;
 		this.triggerCuboid = entitySet.cuboid;
 		this.triggerCondition = entitySet.condition;
@@ -63,9 +63,9 @@ public class SEtrigger extends SEentity {
 		
 		// name:TestTrigger,event:none(),script:none;
 		if (tempEntity == null)
-			result = "name:"+this.name+",event:"+this.event.toString()+",condition:"+tempCondition+",script:"+tempScript;
+			result = "name:"+this.name+",owner:"+this.owner+",event:"+this.event.toString()+",condition:"+tempCondition+",script:"+tempScript;
 		else
-			result = "name:"+this.name+",event:"+this.event.toString()+"("+tempEntity+"),condition:"+tempCondition+",script:"+tempScript;
+			result = "name:"+this.name+",owner:"+this.owner+"event:"+this.event.toString()+"("+tempEntity+"),condition:"+tempCondition+",script:"+tempScript;
 		return result;
 	}
 

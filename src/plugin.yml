@@ -1,6 +1,6 @@
 name: ScriptedEvents
 main: me.nopants.ScriptedEvents.ScriptedEvents
-version: 1.6
+version: 1.6.1
 author: Nopants
 commands:
     SE.debug:

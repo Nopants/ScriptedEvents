@@ -5,8 +5,8 @@ public class SEstring extends SEvariable{
 	
 	String value;
 
-	public SEstring(String newName, String newOwner, String newValue, String newPack) {
-		super(newName, newOwner, newPack);
+	public SEstring(String newName, String newOwner, String newValue) {
+		super(newName, newOwner);
 		this.setValue(newValue);
 	}
 	
