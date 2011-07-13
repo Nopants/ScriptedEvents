@@ -56,7 +56,10 @@ public class SEplayerListener extends PlayerListener {
 	// returns the nearest cuboid to a location
 	public SEcuboid getNextCuboid(Location playerLocation) {
 		Location tempLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), playerLocation.getY(), playerLocation.getZ());
-		Map<String,SEcuboid> cuboidList = SEdata.getCuboidList();
+		Map<String,SEcuboid> cuboidList = SEdata.getAllCuboids();
+		
+		//SEutils.SElog(1, cuboidList.keySet().toString());
+		
 		SEcuboid result = null;
 		int i = 1;
 		
@@ -90,7 +93,7 @@ public class SEplayerListener extends PlayerListener {
 		int playerZ = playerLocation.getBlockZ();
 		
 		// if there are no saved cuboids
-		if (SEdata.getCuboidList().size()==0) return false;
+		if (SEdata.getAllCuboids().size()==0) return false;
 		
 		if ((cuboid != null)&&(cuboid.getWorld().equals(playerLocation.getWorld().getName()))) {
 		
@@ -244,7 +247,6 @@ public class SEplayerListener extends PlayerListener {
 		//----------------------------------------------------------------------------//			
 	}
 	
-	
 	// is called if a player moves onto another Block
 	public void onNewPos(Player movingPlayer) {
 		SEcuboid nextCuboid;
@@ -253,7 +255,7 @@ public class SEplayerListener extends PlayerListener {
 		// if (SEdata.getDebugees(movingPlayer)) utils.SEmessage(movingPlayer, "Step!"); // debug
 		
 		// if there are no cuboids saved, nothing has to be done
-		if (SEdata.getCuboidList().size()>0) {
+		if (SEdata.getAllCuboids().size()>0) {
 			// find the nearest cuboid
 			nextCuboid = getNextCuboid(playerlocation); 
 			if (nextCuboid != null) {

@@ -103,8 +103,6 @@ public class SEdataManager {
 		}
 		
 		refreshConfig();
-		refreshPackages();
-		
 		refreshCuboidList();
 		refreshConditionList();
 		refreshScriptList();
@@ -112,6 +110,8 @@ public class SEdataManager {
 		refreshStringVarList();
 		refreshIntVarList();
 		refreshSetVarList();
+		refreshPackages();
+		//refreshPackages();
 		
 		int variableCount = getStringVarList().size() + getIntVarList().size() + getSetVarList().size();
 		
@@ -162,6 +162,62 @@ public class SEdataManager {
 	// GET Lists
 	//---------------------//
 
+	public Map<String, SEtrigger> getAllTriggers() {
+		Map<String, SEtrigger> result = new HashMap<String, SEtrigger>();
+		
+		result.putAll(getTriggerList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getTriggerList());
+		}
+		return result;
+	}
+	
+	public Map<String, SEcuboid> getAllCuboids() {
+		Map<String, SEcuboid> result = new HashMap<String, SEcuboid>();
+		
+		result.putAll(getCuboidList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getCuboidList());
+		}
+		return result;
+	}
+	
+	public Map<String, SEscript> getAllScripts() {
+		Map<String, SEscript> result = new HashMap<String, SEscript>();
+		
+		result.putAll(getScriptList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getScriptList());
+		}
+		return result;
+	}
+	
+	public Map<String, SEcondition> getAllConditions() {
+		Map<String, SEcondition> result = new HashMap<String, SEcondition>();
+		
+		result.putAll(getConditionList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getConditionList());
+		}
+		return result;
+	}
+	
+	public Map<String, SEpackage> getPackages() {
+		return packages;
+	}
+	
 	// returns the setVarList
 	public Map<String,SEset> getSetVarList() {
 		return this.setVarList;
@@ -205,6 +261,10 @@ public class SEdataManager {
 	//---------------------//
 	// SET Lists
 	//---------------------//
+	
+	public void setPackages(Map<String, SEpackage> packages) {
+		this.packages = packages;
+	}
 	
 	// sets the editEntityList
 	public void setEditEntityList(Map<CommandSender, SEentitySet> newEditEntityList){
@@ -279,7 +339,7 @@ public class SEdataManager {
  	}
 	
  // does a refresh on the list of cuboids in a package
- 	public void reloadTriggerList(Map<String, SEtrigger> list, File file) {
+ 	public void reloadTriggerList(Map<String, SEtrigger> list, File file, String pack) {
  		// if there is a list, delete it
 		if (!(list.isEmpty()))
 			list.clear();
@@ -294,7 +354,7 @@ public class SEdataManager {
 			try {
 				Map<Integer,String> stringTriggers = read(file);
 				for (int i=1;i<=stringTriggers.size();i++) {
-					SEtrigger tempTrigger = utils.stringToTrigger(stringTriggers.get(i));
+					SEtrigger tempTrigger = utils.stringToTrigger(stringTriggers.get(i),pack);
 					if (tempTrigger != null) {
 						list.put(tempTrigger.getName(), tempTrigger);
 					}
@@ -511,7 +571,7 @@ public class SEdataManager {
  	
 	// does a refresh on the main list of triggers
  	public void refreshTriggerList() {
- 		reloadTriggerList(triggerList, triggerFile);
+ 		reloadTriggerList(triggerList, triggerFile, null);
 	}
  	 	
 	// does a refresh on the list of cuboids
@@ -540,6 +600,7 @@ public class SEdataManager {
 				String tempPath = children[i].getPath();
 				String tempName = tempPath.substring(tempPath.lastIndexOf(File.separator)+1);
 				packages.put(tempName, new SEpackage(tempName, plugin));
+				packages.get(tempName).refreshPackage();
 			}
 		}
 	}

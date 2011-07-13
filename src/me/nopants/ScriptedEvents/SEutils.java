@@ -186,10 +186,23 @@ public class SEutils {
 	}
 
 	// returns the trigger which is represented by the input-string
-	public SEtrigger stringToTrigger(String input){
+	public SEtrigger stringToTrigger(String input, String pack){
 		SEtrigger result = null;
 		//trigger1: name:Test1,event:none(),script:none
 		//trigger2: name:Test2,event:onInteractAt(),script:myInteractScript
+		
+		Map<String, SEcuboid> allCuboids = SEdata.getAllCuboids();
+		Map<String, SEscript> allScripts = SEdata.getAllScripts();
+		Map<String, SEcondition> allConditions= SEdata.getAllConditions();
+		
+		//SEutils.SElog(1, "stringToTrigger: "+input);
+		
+		if (pack==null) {
+			pack = "";
+		} else {
+			pack = pack+".";
+		}
+		
 		if (input != null) {
 		
 			String temp;
@@ -245,8 +258,8 @@ public class SEutils {
 						temp = triggerStrings[2].substring(temp.indexOf('('));
 						temp = temp.substring(1, temp.length()-1);
 						try {
-							triggerCuboid = SEdata.getCuboidList().get(temp);
-							// SElog(1, "TriggerCuboid: "+triggerCuboid.getName()); // debug
+							triggerCuboid = allCuboids.get(pack+temp);
+							//SElog(1, "TriggerCuboid: "+triggerCuboid.getName()); // debug
 						} catch (Exception e) {
 							triggerCuboid = null;
 						}
@@ -257,7 +270,8 @@ public class SEutils {
 				if (triggerStrings[3].length()>10) {
 					temp = triggerStrings[3].substring(10);
 					try {
-						triggerCondition = SEdata.getConditionList().get(temp);
+						triggerCondition = allConditions.get(pack+temp);
+						//SElog(1, "TriggerCondition: "+triggerCondition.getName()); // debug
 					} catch (Exception e) {
 						triggerCondition = null;
 					}	
@@ -267,7 +281,7 @@ public class SEutils {
 				if (triggerStrings[4].length()>7) {
 					temp = triggerStrings[4].substring(7);
 					try {
-						triggerScript = SEdata.getScriptList().get(temp);
+						triggerScript = allScripts.get(pack+temp);
 						//SElog(1, "TriggerScript: "+triggerScript.getName()); // debug
 					} catch (Exception e) {
 						triggerScript = null;

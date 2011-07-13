@@ -53,7 +53,7 @@ public class SEtriggerManager {
 	// returns the triggers matching to the event and entities
 	public Map<String, SEtrigger> getRelevantTriggers(SEentitySet entitySet) {		
 		Map<String, SEtrigger> relevantTrigger = new HashMap<String, SEtrigger>();
-		Map<String, SEtrigger> triggerList = SEdata.getTriggerList();
+		Map<String, SEtrigger> allTriggerLists = SEdata.getAllTriggers();
 		
 		SEcuboid triggerCuboid = entitySet.cuboid;
 		SEtrigger.triggerEvent triggerEvent = entitySet.triggerEvent;
@@ -65,9 +65,9 @@ public class SEtriggerManager {
 		
 		// loop: check every trigger in the List
 		
-		Iterator<String> lauf = triggerList.keySet().iterator();
+		Iterator<String> lauf = allTriggerLists.keySet().iterator();
 		while(lauf.hasNext()) {
-			SEtrigger checkTrigger = triggerList.get(lauf.next());
+			SEtrigger checkTrigger = allTriggerLists.get(lauf.next());
 			
 			//--------------------------------//
 			// triggerEvent is cuboid-related
