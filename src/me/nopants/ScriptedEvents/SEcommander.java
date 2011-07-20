@@ -515,6 +515,7 @@ public class SEcommander {
 					
 					// change script-name
 					if (editEntity.script != null) {
+						editEntity.oldName = editEntity.script.getName();
 						editEntity.script.setName(args[0]);
 						utils.SEmessage(sender, "Name changed");
 						result = true;
@@ -522,6 +523,7 @@ public class SEcommander {
 					
 					// change script-name
 					if (editEntity.condition != null) {
+						editEntity.oldName = editEntity.condition.getName();
 						editEntity.condition.setName(args[0]);
 						utils.SEmessage(sender, "Name changed");
 						result = true;
@@ -529,6 +531,7 @@ public class SEcommander {
 					
 					// change trigger-name
 					if (editEntity.trigger != null) {
+						editEntity.oldName = editEntity.trigger.getName();
 						editEntity.trigger.setName(args[0]);
 						utils.SEmessage(sender, "Name changed");
 						result = true;
@@ -536,6 +539,7 @@ public class SEcommander {
 					
 					// change cuboid-name
 					if (editEntity.cuboid != null) {
+						editEntity.oldName = editEntity.cuboid.getName();
 						editEntity.cuboid.setName(args[0]);
 						utils.SEmessage(sender, "Name changed");
 						result = true;
@@ -583,6 +587,8 @@ public class SEcommander {
 				SEcondition editCondition = editEntity.condition;
 				if (editCondition != null) {
 					Map<String, SEcondition> conList = plugin.SEdata.getConditionList();
+					if (editEntity.oldName!=null)
+						conList.remove(editEntity.oldName);
 					conList.put(editCondition.getName(), editCondition);
 					plugin.SEdata.setConditionList(conList);
 					plugin.SEdata.rewriteCondition(plugin.SEdata.getConditionList().get(conList.size()));
@@ -594,6 +600,8 @@ public class SEcommander {
 				SEscript editScript = editEntity.script;
 				if (editScript != null) {
 					Map<String, SEscript> scriptList = plugin.SEdata.getScriptList();
+					if (editEntity.oldName!=null)
+						scriptList.remove(editEntity.oldName);
 					scriptList.put(editScript.getName(), editScript);
 					plugin.SEdata.setScriptList(scriptList);
 					plugin.SEdata.rewriteScript(plugin.SEdata.getScriptList().get(editScript.getName()));
@@ -605,8 +613,13 @@ public class SEcommander {
 				SEtrigger editTrigger = editEntity.trigger;
 				if (editTrigger != null) {
 					Map<String, SEtrigger> triggerList = plugin.SEdata.getTriggerList();
+					if (editEntity.oldName!=null)
+						triggerList.remove(editEntity.oldName);
 					triggerList.put(editTrigger.getName(), editTrigger);
 					plugin.SEdata.setTriggerList(triggerList);
+					
+					//SEutils.SElog(1, "editTrigger: "+plugin.SEdata.getTriggerList().get(editTrigger.getName()).toString()); //debug
+					
 					plugin.SEdata.rewriteTriggerFile();
 					utils.SEmessage(sender, "Edited Trigger saved!");
 					result = true;
@@ -616,6 +629,8 @@ public class SEcommander {
 				SEcuboid editCuboid = editEntity.cuboid;
 				if (editCuboid != null) {
 					Map<String, SEcuboid> cuboidList = plugin.SEdata.getCuboidList();
+					if (editEntity.oldName!=null)
+						cuboidList.remove(editEntity.oldName);
 					cuboidList.put(editCuboid.getName(), editCuboid);
 					plugin.SEdata.setCuboidList(cuboidList);
 					plugin.SEdata.rewriteCuboidFile();
@@ -651,7 +666,7 @@ public class SEcommander {
 				if (player!=null) {
 					if (!plugin.SEdata.getCuboidList().containsKey(args[0])) {
 						if ((plugin.playerListener.getVertex1(player)!=null)&&(plugin.playerListener.getVertex2(player)!=null)) {
-							SEcuboid saveCuboid = new SEcuboid(player.getWorld().getName(), args[0], senderName, plugin.playerListener.getVertex1(player), plugin.playerListener.getVertex2(player));
+							SEcuboid saveCuboid = new SEcuboid(player.getWorld().getName(), args[0], senderName, plugin.playerListener.getVertex1(player), plugin.playerListener.getVertex2(player), null);
 							plugin.SEdata.writeCuboid(saveCuboid.toString());
 							utils.SEmessage(player, "Cuboid '"+args[0]+"' created!");
 							plugin.SEdata.refreshCuboidList();
@@ -762,7 +777,7 @@ public class SEcommander {
 					// create a blank trigger with 'name' and 'ID'
 					SEentitySet entitySet = new SEentitySet();
 					entitySet.name = args[0];
-					SEtrigger newTrigger = new SEtrigger(entitySet, senderName);
+					SEtrigger newTrigger = new SEtrigger(entitySet, senderName, null);
 				
 					// and update it to the dataManager and trigger.yml
 					plugin.SEdata.writeTrigger(newTrigger.toString());
@@ -862,7 +877,7 @@ public class SEcommander {
 				if (!plugin.SEdata.getScriptList().containsKey(args[0])) {
 															
 					File newScriptFile = new File(SEdataManager.scriptDirectory + File.separator + args[0] + ".script");
-					SEscript newScript = new SEscript(newScriptFile, args[0], senderName, new HashMap<Integer, String>());
+					SEscript newScript = new SEscript(newScriptFile, args[0], senderName, new HashMap<Integer, String>(), null);
 					if (!newScriptFile.exists()) {
 						plugin.SEdata.rewriteScript(newScript);
 						plugin.SEdata.refreshScriptList();
@@ -965,7 +980,7 @@ public class SEcommander {
 				if (!plugin.SEdata.getConditionList().containsKey(args[0])) {
 															
 					File newConditionFile = new File(SEdataManager.conditionDirectory + File.separator + args[0] + ".condition");
-					SEcondition newCondition = new SEcondition(newConditionFile, args[0], senderName, logicalOperator.and, new HashMap<Integer, String>());
+					SEcondition newCondition = new SEcondition(newConditionFile, args[0], senderName, logicalOperator.and, new HashMap<Integer, String>(), null);
 					if (!newConditionFile.exists()) {
 						plugin.SEdata.rewriteCondition(newCondition);
 						plugin.SEdata.refreshConditionList();
@@ -1078,7 +1093,7 @@ public class SEcommander {
 								Map<String,SEstring> tempList = plugin.SEdata.getStringVarList();
 								String value = args[2]; // plugin.triggerManager.resolveVariables(args[2], new SEentitySet());
 								
-								tempList.put(args[1], new SEstring(args[1], senderName, value));
+								tempList.put(args[1], new SEstring(args[1], senderName, value, null));
 								plugin.SEdata.setStringVarList(tempList);
 								plugin.SEdata.rewriteStringVarFile();
 								plugin.SEdata.refreshStringVarList();
@@ -1110,7 +1125,7 @@ public class SEcommander {
 								if (!plugin.SEdata.variableExists(args[1])) {
 									
 									Map<String,SEinteger> tempList = plugin.SEdata.getIntVarList();
-									tempList.put(args[1], new SEinteger(args[1],senderName, value));
+									tempList.put(args[1], new SEinteger(args[1],senderName, value, null));
 									plugin.SEdata.setIntVarList(tempList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();
@@ -1136,7 +1151,7 @@ public class SEcommander {
 								
 								Map<String,SEset> tempSetVarList = plugin.SEdata.getSetVarList();
 								
-								tempSetVarList.put(args[1], new SEset(args[1], senderName, new HashSet<String>()));
+								tempSetVarList.put(args[1], new SEset(args[1], senderName, new HashSet<String>(), null));
 								
 								plugin.SEdata.setSetVarList(tempSetVarList);
 								
@@ -1251,7 +1266,7 @@ public class SEcommander {
 						if (tempStringVarList.containsKey(args[1])) {
 							try {
 								String oldOwner = tempStringVarList.get(args[1]).getOwner();
-								tempStringVarList.put(args[1], new SEstring(args[1], oldOwner, args[2]));
+								tempStringVarList.put(args[1], new SEstring(args[1], oldOwner, args[2],null));
 								plugin.SEdata.setStringVarList(tempStringVarList);
 								plugin.SEdata.rewriteStringVarFile();
 								plugin.SEdata.refreshStringVarList();
@@ -1285,7 +1300,7 @@ public class SEcommander {
 							if (intArgs) {
 								try {
 									String oldOwner = tempIntVarList.get(args[1]).getOwner();
-									tempIntVarList.put(args[1], new SEinteger(args[1], oldOwner, value));
+									tempIntVarList.put(args[1], new SEinteger(args[1], oldOwner, value, null));
 									plugin.SEdata.setIntVarList(tempIntVarList);
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();

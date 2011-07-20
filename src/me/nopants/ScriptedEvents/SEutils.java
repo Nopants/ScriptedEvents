@@ -188,6 +188,7 @@ public class SEutils {
 	// returns the trigger which is represented by the input-string
 	public SEtrigger stringToTrigger(String input, String pack){
 		SEtrigger result = null;
+		String prefix;
 		//trigger1: name:Test1,event:none(),script:none
 		//trigger2: name:Test2,event:onInteractAt(),script:myInteractScript
 		
@@ -198,9 +199,9 @@ public class SEutils {
 		//SEutils.SElog(1, "stringToTrigger: "+input);
 		
 		if (pack==null) {
-			pack = "";
+			prefix = "";
 		} else {
-			pack = pack+".";
+			prefix = pack+".";
 		}
 		
 		if (input != null) {
@@ -227,7 +228,7 @@ public class SEutils {
 
 				// Name
 				triggerName = triggerStrings[0].substring(5);
-				//SElog(1, "TriggerName: "+triggerName); // debug
+				//SElog(1, "Name: "+triggerName); // debug
 				
 				// Owner
 				triggerOwner = triggerStrings[1].substring(6);
@@ -258,7 +259,7 @@ public class SEutils {
 						temp = triggerStrings[2].substring(temp.indexOf('('));
 						temp = temp.substring(1, temp.length()-1);
 						try {
-							triggerCuboid = allCuboids.get(pack+temp);
+							triggerCuboid = allCuboids.get(prefix+temp);
 							//SElog(1, "TriggerCuboid: "+triggerCuboid.getName()); // debug
 						} catch (Exception e) {
 							triggerCuboid = null;
@@ -270,7 +271,7 @@ public class SEutils {
 				if (triggerStrings[3].length()>10) {
 					temp = triggerStrings[3].substring(10);
 					try {
-						triggerCondition = allConditions.get(pack+temp);
+						triggerCondition = allConditions.get(prefix+temp);
 						//SElog(1, "TriggerCondition: "+triggerCondition.getName()); // debug
 					} catch (Exception e) {
 						triggerCondition = null;
@@ -281,14 +282,14 @@ public class SEutils {
 				if (triggerStrings[4].length()>7) {
 					temp = triggerStrings[4].substring(7);
 					try {
-						triggerScript = allScripts.get(pack+temp);
+						triggerScript = allScripts.get(prefix+temp);
 						//SElog(1, "TriggerScript: "+triggerScript.getName()); // debug
 					} catch (Exception e) {
 						triggerScript = null;
 					}	
 				} else triggerScript = null;
 				
-				result = new SEtrigger(new SEentitySet(triggerName, event, triggerCuboid, triggerCondition, triggerScript, triggerCommand), triggerOwner);
+				result = new SEtrigger(new SEentitySet(triggerName, event, triggerCuboid, triggerCondition, triggerScript, triggerCommand), triggerOwner, pack);
 			} else result = null;
 			
 		} else result = null;
@@ -297,7 +298,7 @@ public class SEutils {
 	}
 	
 	// returns the cuboid which is represented by the input-string
-	public SEcuboid stringToCuboid(String input){
+	public SEcuboid stringToCuboid(String input, String pack){
 		SEcuboid result = null;
 		// input = world:world,name:Static Cuboid,vertex1:347;92;470,vertex2:350;92;468;
 		if (input != null) {
@@ -321,7 +322,7 @@ public class SEutils {
 				owner = cuboidStrings[2].substring(6);
 				corner1 = stringToLocation(cuboidStrings[3].substring(8));
 				corner2 = stringToLocation(cuboidStrings[4].substring(8));
-				result = new SEcuboid(world, name, owner, corner1, corner2);		
+				result = new SEcuboid(world, name, owner, corner1, corner2, pack);		
 			} else result = null;
 			
 		} else result = null;

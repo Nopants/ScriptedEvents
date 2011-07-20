@@ -36,6 +36,7 @@ public class SEinterpreter extends Thread {
 	
 	public enum kindType {script,condition};
 	
+	String packageName = null;
 	kindType kind = null;
 	SEtrigger trigger = null;
 	SEscript script = null;
@@ -128,7 +129,6 @@ public class SEinterpreter extends Thread {
 			"else",
 			"delay",
 			"trigger",
-			"setRandomRange",
 			"doForCuboidBlocks",
 			"doForSetItems",
 			"script",
@@ -257,7 +257,8 @@ public class SEinterpreter extends Thread {
 	//-------------//
 	
 	// constructor
-	public SEinterpreter(ScriptedEvents newPlugin, SEtrigger newTrigger, SEentitySet newEntitySet, kindType newKind) {
+	public SEinterpreter(ScriptedEvents newPlugin, SEtrigger newTrigger, SEentitySet newEntitySet, kindType newKind, String newPackageName) {
+		this.packageName = newPackageName;
 		this.kind = newKind;
 		this.plugin = newPlugin;
 		this.SEdata = newPlugin.SEdata;
@@ -287,13 +288,13 @@ public class SEinterpreter extends Thread {
 	@SuppressWarnings("unchecked")
 	public void run() {
 		HashSet<String> intVars = new HashSet<String>();
-		intVars.addAll(SEdata.getIntVarList().keySet());
+		intVars.addAll(SEdata.getAllIntVars().keySet());
 		intVars = (HashSet<String>) intVars.clone();
 		tempIntegers = (HashSet<String>) intVars.clone();
 		Iterator<String> intLauf = intVars.iterator();
 		
 		HashSet<String> stringVars = new HashSet<String>();
-		stringVars.addAll(SEdata.getStringVarList().keySet());
+		stringVars.addAll(SEdata.getAllStringVars().keySet());
 		stringVars = (HashSet<String>) stringVars.clone();
 		tempStrings = (HashSet<String>) stringVars.clone();
 		Iterator<String> stringLauf = stringVars.iterator();
@@ -350,7 +351,7 @@ public class SEinterpreter extends Thread {
 			boolean check = true;
 			
 			if (condition != null && condition.getConditionList() != null) {
-				SEinterpreter interpreter = new SEinterpreter(plugin, this.trigger, this.entitySet, SEinterpreter.kindType.condition);
+				SEinterpreter interpreter = new SEinterpreter(plugin, this.trigger, this.entitySet, SEinterpreter.kindType.condition, this.packageName);
 				interpreter.start();
 				while(interpreter.isWorking)
 					try {
@@ -360,12 +361,13 @@ public class SEinterpreter extends Thread {
 				check = interpreter.check;
 			}
 			
-			if (check)
+			if (check) {
 				for (this.scriptLine = 1; this.scriptLine<=actionList.size(); this.scriptLine++) {
 					String temp = actionList.get(this.scriptLine);
 					if (temp != "")
 						executeLine(temp, actions);
 				}
+			}
 		}	
 	}	
 	
@@ -580,10 +582,9 @@ public class SEinterpreter extends Thread {
 											if (expression.equals("while")) {
 												While(input);
 											}
-											
-											/*
-											"setRandomRange",
-											*/
+											/*if (expression.equals("setRandomRange")) {
+												setRandomRange(input);
+											}*/
 											
 											// FUNCTIONS
 											//==========
@@ -748,8 +749,10 @@ public class SEinterpreter extends Thread {
 											*/
 											
 											// resolve user-defined String variables
-											Map<String,SEstring> tempStrings = SEdata.getStringVarList();
+											Map<String,SEstring> tempStrings = SEdata.getAllStringVars();
 											if (tempStrings != null) {
+												if (this.packageName != null)
+													expression = "<"+this.packageName+"."+expression.substring(1, expression.length()-1)+">";
 												for ( Iterator<String> i = tempStrings.keySet().iterator(); i.hasNext(); ) {
 													String tempVar = (String) i.next();
 													// utils.SElog(1, expression+" = "+ "<"+tempVar+">"); // debug
@@ -761,11 +764,16 @@ public class SEinterpreter extends Thread {
 												
 											
 											// resolve user-defined Integer variables
-											Map<String,SEinteger> tempIntegers = SEdata.getIntVarList();
+											Map<String,SEinteger> tempIntegers = SEdata.getAllIntVars();
 											if (tempIntegers != null) {
+												if (this.packageName != null)
+													expression = "<"+this.packageName+"."+expression.substring(1, expression.length()-1)+">";
 												for ( Iterator<String> i = tempIntegers.keySet().iterator(); i.hasNext(); ) {
 													String tempVar = (String) i.next();
 													// utils.SElog(1, expression+" = "+ "<"+tempVar+">"); // debug
+													
+													SEutils.SElog(1, expression+" = <"+tempVar+">");
+													
 													if (expression.equals("<"+tempVar+">")) {
 														//SEutils.SElog(1, "value: "+tempIntegers.get(tempVar).getValue());
 														result = String.valueOf(tempIntegers.get(tempVar).getValue());
@@ -838,7 +846,9 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a cuboid and can send an error
 	public SEcuboid inputToCuboid(String expression, String input) {
 		SEcuboid result = null;
-		result = SEdata.getCuboidList().get(input);
+		if (this.packageName != null)
+			input = packageName+"."+input;
+		result = SEdata.getAllCuboids().get(input);
 		if (result == null)
 			sendError(expression, cuboidNotFound);
 		return result;
@@ -847,7 +857,9 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a trigger and can send an error
 	public SEtrigger inputToTrigger(String expression, String input) {
 		SEtrigger result = null;
-		result = SEdata.getTriggerList().get(input);
+		if (this.packageName != null)
+			input = packageName+"."+input;
+		result = SEdata.getAllTriggers().get(input);
 		if (result == null)
 			sendError(expression, triggerNotFound);
 		return result;
@@ -856,6 +868,8 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a set-variable and can send an error
 	public SEset inputToSet(String expression, String input) {
 		SEset result = null;
+		if (this.packageName != null)
+			input = packageName+"."+input;
 		result = SEdata.getSetVarList().get(input); 
 		if (result == null)
 			sendError(expression, setNotFound);
@@ -865,7 +879,9 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a script and can send an error
 	public SEscript inputToScript(String expression, String input) {
 		SEscript result = null;
-		result = SEdata.getScriptList().get(input);
+		if (this.packageName != null)
+			input = packageName+"."+input;
+		result = SEdata.getAllScripts().get(input);
 		if (result == null)
 			sendError(expression, scriptNotFound);
 		return result;
@@ -874,7 +890,9 @@ public class SEinterpreter extends Thread {
 	// trys to turn an input String into a condition and can send an error
 	public SEcondition inputToCondition(String expression, String input) {
 		SEcondition result = null;
-		result = SEdata.getConditionList().get(input);
+		if (this.packageName != null)
+			input = packageName+"."+input;
+		result = SEdata.getAllConditions().get(input);
 		if (result == null)
 			sendError(expression, conditionNotFound);
 		return result;
@@ -1006,10 +1024,10 @@ public class SEinterpreter extends Thread {
 		}
 		
 		if (!subScriptActions.isEmpty()) {
-			SEscript subScript = new SEscript(null, "subScript", script.getOwner(), subScriptActions);
+			SEscript subScript = new SEscript(null, "subScript", script.getOwner(), subScriptActions, this.packageName);
 			SEentitySet subEntitySet = new SEentitySet();
 			subEntitySet.script = subScript;
-			SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner()), entitySet, kindType.script);
+			SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner(), this.packageName), entitySet, kindType.script, this.packageName);
 			interpreter.start();
 			
 			while(interpreter.isAlive()) {
@@ -1284,7 +1302,7 @@ public class SEinterpreter extends Thread {
 			SEtrigger tempTrigger = inputToTrigger(name, input[0]);
 			
 			if (tempTrigger != null) {
-				SEinterpreter interpreter = new SEinterpreter(this.plugin, tempTrigger, entitySet, kindType.script);
+				SEinterpreter interpreter = new SEinterpreter(this.plugin, tempTrigger, entitySet, kindType.script, this.packageName);
 				interpreter.start();	
 			}
 		}
@@ -1299,7 +1317,7 @@ public class SEinterpreter extends Thread {
 			if (tempScript != null) {
 				SEentitySet subEntitySet = new SEentitySet();
 				subEntitySet.script = tempScript;
-				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner()), entitySet, kindType.script);
+				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner(), this.packageName), entitySet, kindType.script, this.packageName);
 				interpreter.start();	
 			}
 		}
@@ -1309,7 +1327,9 @@ public class SEinterpreter extends Thread {
 		String name = "doForCuboidBlocks";
 		if (checkInput(name, input.length == 2)) {
 			SEcuboid tempCuboid = inputToCuboid(name, input[0]);
-			World tempWorld = inputToWorld(name, tempCuboid.getWorld());
+			World tempWorld = null;
+			if (tempCuboid != null)
+				tempWorld = inputToWorld(name, tempCuboid.getWorld());
 			String action = input[1]; 
 			
 			if (tempCuboid != null && tempWorld != null) {
@@ -1380,6 +1400,25 @@ public class SEinterpreter extends Thread {
 		}
 	}
 	
+	/*
+	public void setRandomRange(String[] input) {
+		String name = "setRandomRange";
+		if (checkInput(name, input.length == 2)) {
+			if (inputToInteger(name, input[0])!="null") {
+				int cycles = Integer.valueOf(inputToInteger(name, input[0]));
+				
+				if (this.cycles == -1 && cycles > 0) {
+					this.cycles = cycles;
+				}
+				
+				if (this.cycles>0) {
+					this.cycles--;
+					this.scriptLine = 0;
+				}	
+			}
+		}
+	}
+	*/
 	
 	//-----------//
 	// FUNCTIONS //
@@ -1701,7 +1740,7 @@ public class SEinterpreter extends Thread {
 			if (tempCondition != null && tempCondition.getConditionList() != null) {
 				SEentitySet subEntitySet = new SEentitySet();
 				subEntitySet.condition = tempCondition;
-				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner()), entitySet, kindType.condition);
+				SEinterpreter interpreter = new SEinterpreter(this.plugin, new SEtrigger(subEntitySet, script.getOwner(), this.packageName), entitySet, kindType.condition, this.packageName);
 				interpreter.start();
 				while(interpreter.isWorking)
 					try {

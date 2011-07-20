@@ -7,8 +7,8 @@ public class SEset extends SEvariable{
 
 	Set<String> values;
 
-	public SEset(String newName, String newOwner, Set<String> newValues) {
-		super(newName, newOwner);
+	public SEset(String newName, String newOwner, Set<String> newValues, String newPack) {
+		super(newName, newOwner, newPack);
 		setValues(newValues);
 	}
 	

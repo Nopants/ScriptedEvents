@@ -41,7 +41,7 @@ public class SEpackage extends SEentity{
 	private Map<String,SEset> setVarList =  new HashMap<String, SEset>();
 	
 	public SEpackage(String newName, ScriptedEvents newPlugin) {
-		super(newName, "Console");
+		super(newName, "Console", null);
 		
 		plugin = newPlugin;
 		data = plugin.SEdata;
@@ -87,7 +87,7 @@ public class SEpackage extends SEentity{
 	
 	// does a refresh on the main list of Conditions
  	public void refreshConditionList() {
- 		data.reloadConditionList(conditionList, conditionDirectory);
+ 		data.reloadConditionList(conditionList, conditionDirectory, this.getName());
  		
  		HashMap<String,SEcondition> tempList = new HashMap<String,SEcondition>(); 		
  		Iterator<String> lauf = conditionList.keySet().iterator();
@@ -101,7 +101,7 @@ public class SEpackage extends SEentity{
 	
 	// does a refresh on the main list of Scripts
  	public void refreshScriptList() {
- 		data.reloadScriptList(scriptList, scriptDirectory);
+ 		data.reloadScriptList(scriptList, scriptDirectory, this.getName());
  		
  		HashMap<String,SEscript> tempList = new HashMap<String,SEscript>(); 		
  		Iterator<String> lauf = scriptList.keySet().iterator();
@@ -129,7 +129,7 @@ public class SEpackage extends SEentity{
  	 	
 	// does a refresh on the list of Cuboids
  	public void refreshCuboidList() {
- 		data.reloadCuboidList(cuboidList, cuboidFile);
+ 		data.reloadCuboidList(cuboidList, cuboidFile, this.getName());
  		
  		HashMap<String,SEcuboid> tempList = new HashMap<String,SEcuboid>(); 		
  		Iterator<String> lauf = cuboidList.keySet().iterator();

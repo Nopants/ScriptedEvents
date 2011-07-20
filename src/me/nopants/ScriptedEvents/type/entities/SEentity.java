@@ -7,10 +7,12 @@ public class SEentity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	String name;
 	String owner;
+	String pack;
 		
-	public SEentity(String newName, String newOwner) {
+	public SEentity(String newName, String newOwner, String newPack) {
 		this.setName(newName);
 		this.setOwner(newOwner);
+		this.setPack(newPack);
 	}
 	
 	public String getName() {
@@ -25,4 +27,13 @@ public class SEentity implements Serializable {
 	public void setOwner(String owner) {
 		this.owner = owner;
 	}
+
+	public String getPack() {
+		return pack;
+	}
+
+	public void setPack(String pack) {
+		this.pack = pack;
+	}
+	
 }

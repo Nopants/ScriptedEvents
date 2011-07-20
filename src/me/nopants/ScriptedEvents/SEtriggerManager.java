@@ -44,8 +44,8 @@ public class SEtriggerManager {
 		while (lauf.hasNext()) {
 			SEtrigger tempTrigger = triggerList.get(lauf.next());
 			if (tempTrigger.getScript() != null) {
-				SEinterpreter interpreter = new SEinterpreter(plugin, tempTrigger, entitySet, SEinterpreter.kindType.script);
-				interpreter.start();	
+				SEinterpreter interpreter = new SEinterpreter(plugin, tempTrigger, entitySet, SEinterpreter.kindType.script, tempTrigger.getPack());
+				interpreter.start();
 			}
 		}
 	}

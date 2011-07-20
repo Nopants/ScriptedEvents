@@ -35,6 +35,7 @@ public class SEentitySet {
 	
 	public String setItem = null;
 	public String name = null;
+	public String oldName = null;
 	
 	public PlayerInteractEvent interactEvent = null;
 	public PlayerRespawnEvent respawnEvent = null;

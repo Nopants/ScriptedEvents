@@ -5,8 +5,8 @@ public class SEinteger extends SEvariable{
 	
 	int value;
 
-	public SEinteger(String newName, String newOwner, int newValue) {
-		super(newName, newOwner);
+	public SEinteger(String newName, String newOwner, int newValue, String newPack) {
+		super(newName, newOwner, newPack);
 		this.setValue(newValue);
 	}
 

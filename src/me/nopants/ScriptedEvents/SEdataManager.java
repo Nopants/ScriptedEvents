@@ -214,6 +214,45 @@ public class SEdataManager {
 		return result;
 	}
 	
+	public Map<String, SEinteger> getAllIntVars() {
+		Map<String, SEinteger> result = new HashMap<String, SEinteger>();
+		
+		result.putAll(getIntVarList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getIntVarList());
+		}
+		return result;
+	}
+	
+	public Map<String, SEstring> getAllStringVars() {
+		Map<String, SEstring> result = new HashMap<String, SEstring>();
+		
+		result.putAll(getStringVarList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getStringVarList());
+		}
+		return result;
+	}
+	
+	public Map<String, SEset> getAllSetVars() {
+		Map<String, SEset> result = new HashMap<String, SEset>();
+		
+		result.putAll(getSetVarList());
+		Iterator<String> lauf = packages.keySet().iterator();
+		
+		while (lauf.hasNext()) {
+			SEpackage tempPackage = packages.get(lauf.next());
+			result.putAll(tempPackage.getSetVarList());
+		}
+		return result;
+	}
+	
 	public Map<String, SEpackage> getPackages() {
 		return packages;
 	}
@@ -312,7 +351,7 @@ public class SEdataManager {
 	//---------------------//
 	
  	// does a refresh on the list of cuboids in a package
- 	public void reloadCuboidList(Map<String, SEcuboid> list, File file) {
+ 	public void reloadCuboidList(Map<String, SEcuboid> list, File file, String pack) {
  		// if there is a list, delete it
 		if (!(list.isEmpty()))
 			list.clear();
@@ -327,7 +366,7 @@ public class SEdataManager {
 			try {
 				Map<Integer,String> stringCuboids = read(file);
 				for (int i=1;i<=stringCuboids.size();i++) {
-					SEcuboid tempCuboid = utils.stringToCuboid(stringCuboids.get(i));
+					SEcuboid tempCuboid = utils.stringToCuboid(stringCuboids.get(i), pack);
 					if (tempCuboid != null) {
 						list.put(tempCuboid.getName(), tempCuboid);
 					}
@@ -366,7 +405,7 @@ public class SEdataManager {
  	}
  	
 	// does a refresh on the list of conditions
-	public void reloadConditionList(Map<String, SEcondition> list, String path) {
+	public void reloadConditionList(Map<String, SEcondition> list, String path, String pack) {
 		// if there is a list, delete it
  		if (!(list.isEmpty()))
  			list.clear();
@@ -379,7 +418,7 @@ public class SEdataManager {
 				// loop over all .condition-files
 				for(int i = 0; i < conditionFileList.length; i++) {
 					// save the condition into conditionList
-					SEcondition tempCondition = loadConditionFile(conditionFileList[i]);
+					SEcondition tempCondition = loadConditionFile(conditionFileList[i], pack);
 					list.put(tempCondition.getName(), tempCondition) ;
 				}	
 			}
@@ -389,7 +428,7 @@ public class SEdataManager {
 	}
  	
 	// does a refresh on the list of scripts
-	public void reloadScriptList(Map<String, SEscript> list, String path) {
+	public void reloadScriptList(Map<String, SEscript> list, String path, String pack) {
 		// if there is a list, delete it
  		if (!(list.isEmpty()))
  			list.clear();
@@ -402,7 +441,7 @@ public class SEdataManager {
 				// loop over all .script-files
 				for(int i = 0; i < scriptFileList.length; i++) {
 					// save the script into scriptList
-					SEscript tempScript = loadScriptFile(scriptFileList[i]);
+					SEscript tempScript = loadScriptFile(scriptFileList[i], pack);
 					list.put(tempScript.getName(), tempScript) ;
 				}	
 			}
@@ -412,7 +451,7 @@ public class SEdataManager {
 	}
  	
 	// returns a SEcondition with the information of a conditionFile
-	public SEcondition loadConditionFile(File conditionFile) {
+	public SEcondition loadConditionFile(File conditionFile, String pack) {
 		
 		// make a blank conditionList
 		Map<Integer, String> conList = new HashMap<Integer, String>();
@@ -433,11 +472,11 @@ public class SEdataManager {
 		// get the name of the condition
 		String temp = conditionFile.getName();
 		temp = temp.substring(0, temp.lastIndexOf('.'));
-		return new SEcondition(conditionFile, temp, null, operator, conList);
+		return new SEcondition(conditionFile, temp, null, operator, conList, pack);
 	}
 	
 	// returns a SEscript with the information of a scriptFile
-	public SEscript loadScriptFile(File scriptFile) {
+	public SEscript loadScriptFile(File scriptFile, String pack) {
 		
 		// make a blank actionList
 		Map<Integer, String> actionList = new HashMap<Integer, String>();
@@ -457,7 +496,7 @@ public class SEdataManager {
 		// get the name of the script
 		String temp = scriptFile.getName();
 		temp = temp.substring(0, temp.lastIndexOf('.'));
-		return new SEscript(scriptFile, temp, null, actionList);
+		return new SEscript(scriptFile, temp, null, actionList, pack);
 	}
 	
 	// does a refresh on the list of Integer variables
@@ -561,12 +600,12 @@ public class SEdataManager {
 
 	// does a refresh on the main list of triggers
  	public void refreshConditionList() {
- 		reloadConditionList(conditionList, conditionDirectory);
+ 		reloadConditionList(conditionList, conditionDirectory, null);
 	}
 	
 	// does a refresh on the main list of triggers
  	public void refreshScriptList() {
- 		reloadScriptList(scriptList, scriptDirectory);
+ 		reloadScriptList(scriptList, scriptDirectory, null);
 	}
  	
 	// does a refresh on the main list of triggers
@@ -576,7 +615,7 @@ public class SEdataManager {
  	 	
 	// does a refresh on the list of cuboids
  	public void refreshCuboidList() {
-		reloadCuboidList(cuboidList, cuboidFile);
+		reloadCuboidList(cuboidList, cuboidFile, null);
 	}
 	
  	public void refreshIntVarList() {
@@ -729,10 +768,12 @@ public class SEdataManager {
 		} catch (IOException e) {
 			SEutils.SElog(3, "Couldn't rewrite trigger.yml!");
 		}
+		Iterator<String> lauf = triggerList.keySet().iterator();
 		
-		for (int i = 1; i <= triggerList.size()+1; i++) {
-			if (triggerList.get(i)!=null) {
-				writeTrigger(triggerList.get(i).toString());
+		while (lauf.hasNext()) {
+			SEtrigger tempTrigger = triggerList.get(lauf.next());
+			if (tempTrigger!=null) {
+				writeTrigger(tempTrigger.toString());
 			}
 		}
 	}
@@ -773,7 +814,7 @@ public class SEdataManager {
 	public void rewriteStringVarFile() {
 		try {
 			stringVarFile.delete();
-			SEutils.SElog(1, "save: "+stringVarList.keySet().toString());
+			//SEutils.SElog(1, "save: "+stringVarList.keySet().toString());
 			saveObject(stringVarList, stringVarFile);
 		} catch (Exception ex) {
 			SEutils.SElog(3, "Couldn't rewrite string.var!");

@@ -13,8 +13,8 @@ public class SEtrigger extends SEentity {
 	private SEscript triggerScript;
 	private SEcondition triggerCondition;
 	
-	public SEtrigger(SEentitySet entitySet, String newOwner){
-		super(entitySet.name, newOwner);
+	public SEtrigger(SEentitySet entitySet, String newOwner, String newPack){
+		super(entitySet.name, newOwner, newPack);
 		this.event = entitySet.triggerEvent;
 		this.triggerCuboid = entitySet.cuboid;
 		this.triggerCondition = entitySet.condition;
