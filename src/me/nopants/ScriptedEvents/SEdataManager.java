@@ -10,10 +10,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import me.nopants.ScriptedEvents.type.SEentitySet;
 import me.nopants.ScriptedEvents.type.entities.SEcondition;
@@ -40,6 +43,7 @@ public class SEdataManager {
 	static public File configFile = new File(mainDirectory + File.separator + "config.yml");
 	static public File cuboidFile = new File(mainDirectory + File.separator + "cuboid.dat");
 	static public File triggerFile = new File(mainDirectory + File.separator + "trigger.dat");
+	static public File errorLogFile = new File(mainDirectory + File.separator + "errorLog.txt");
 	static public String stringVarPath = variableDirectory + File.separator + "string.var";
 	static public String intVarPath = variableDirectory + File.separator + "integer.var";
 	static public File stringVarFile = new File(stringVarPath);
@@ -54,8 +58,14 @@ public class SEdataManager {
 	private Map<String, SEinteger> intVarList = new HashMap<String, SEinteger>();
 	private Map<String,SEset> setVarList =  new HashMap<String, SEset>();
 	private Map<Player, Boolean> debugees = new HashMap<Player, Boolean>();
-	private int TriggerItem = 0;
 	private static int operatorLine = 1;
+	public int TriggerItem = 0;
+	public String ErrorDestination = "LOG";
+	
+	Set<String> ErrorDestinations = new HashSet<String> (Arrays.asList(
+			"LOG",
+			"FILE"
+			));
 	
 	private ScriptedEvents plugin;
 	public SEutils utils;
@@ -78,6 +88,7 @@ public class SEdataManager {
 			try {
 				configFile.createNewFile();
 				writeConfig("TriggerItem", "288");
+				writeConfig("ErrorDestination", "LOG");
 				SEutils.SElog(2, "config.yml created!");
 			} catch (Exception ex) {
 				SEutils.SElog(3, "Couldn't create config.yml!");
@@ -592,6 +603,15 @@ public class SEdataManager {
 	public void refreshConfig() {
 		try {
 			TriggerItem = Integer.valueOf(readConfig("TriggerItem"));
+			ErrorDestination = readConfig("ErrorDestination");
+			if (ErrorDestination == null) {
+				writeConfig("ErrorDestination", "LOG");
+				ErrorDestination = "LOG";
+			}
+			if (!ErrorDestinations.contains(ErrorDestination)) {
+				SEutils.SElog(2, "Invalid 'ErrorDestination' found in config.yml. Defaulting to 'LOG'!");
+				ErrorDestination = "LOG";
+			}
 		} catch (Exception e) {
 			SEutils.SElog(3, "Failed to load config from file!");
 		}
@@ -873,7 +893,13 @@ public class SEdataManager {
 	public void write(File file, String x) {
 		try {
 			Writer out = new OutputStreamWriter(new FileOutputStream(file,true));
-		    out.write(System.getProperty("line.separator")+x);
+		    FileInputStream in = new FileInputStream(file);  
+		    int check = in.read();  
+		    if (check == -1) {  
+		    	out.write(x);  
+		    } else {
+		    	out.write(System.getProperty("line.separator")+x);	
+		    }		    
 		    out.close();	
 		} catch (Exception e) {
 			SEutils.SElog(3, "Could not write to '"+file.getName()+"'!");

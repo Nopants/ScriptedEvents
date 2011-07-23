@@ -1,5 +1,6 @@
 package me.nopants.ScriptedEvents;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +67,7 @@ public class SEinterpreter extends Thread {
 	String missingCloseAngleBracket = "Closing angle bracket expected";
 	String missingOpenAngleBracket = "Opening angle bracket expected";
 	String unexpectedBracket = "Unexpected bracket";
+	String calcfailed = "Calculation failed";
 	String sleep = "Interpreter thread doesn't want to go to sleep yet!";
 	
 	String invalidInteger = "Invalid Integer given";
@@ -213,7 +215,9 @@ public class SEinterpreter extends Thread {
 			"isEmpty",
 			"isOpen",
 			"isSwitchedOn",
-			"isInside"
+			"isInside",
+			"hasPermission",
+			"inGroup"
 			));
 
 	// VARIABLES
@@ -346,15 +350,40 @@ public class SEinterpreter extends Thread {
 	//-------------------//
 	
 	public void sendError(String expression, String error) {
+		String timeStamp = new java.sql.Timestamp(new java.util.Date().getTime()).toString();
+		timeStamp = timeStamp.substring(0, timeStamp.length()-4);
+		String message;
+		
+		SEutils.SElog(1, plugin.SEdata.ErrorDestination); // debug
+		
+		// create Error-Message
 		if (expression != null && workingPlace != null) {
-			SEutils.SElog(2, "\""+expression+"\": "+error+" in line: "+workingLine+" ("+workingPlace+")");
-			return;
+			message = "\""+expression+"\": "+error+" in line: "+workingLine+" ("+workingPlace+")";
 		}
-		if (workingPlace != null) {
-			SEutils.SElog(2, error+" in line: "+workingLine+" ("+workingPlace+")");
-			return;
+		else if (workingPlace != null) {
+			message = error+" in line: "+workingLine+" ("+workingPlace+")";
 		}
-		SEutils.SElog(2, error+" in line: "+workingLine);
+		else {
+			message = error+" in line: "+workingLine;
+		}
+		
+		// send Error to LOG
+		if (plugin.SEdata.ErrorDestination.equals("LOG")) {
+			SEutils.SElog(2, message);	
+		}
+
+		// send Error to FILE
+		if (plugin.SEdata.ErrorDestination.equals("FILE")) {
+			File errorLogFile = SEdataManager.errorLogFile;
+			if (!errorLogFile.exists()) {
+				try {
+					errorLogFile.createNewFile();
+				} catch (Exception ex) {
+					SEutils.SElog(3, "Couldn't create 'errorLog.txt'!");
+				}
+			}
+			plugin.SEdata.write(errorLogFile, timeStamp+": "+message);
+		}
 	}
 	
 	// executes the interpreters script
@@ -697,6 +726,12 @@ public class SEinterpreter extends Thread {
 											if (expression.equals("isInside")) {
 												result = isInside(input);
 											}
+											if (expression.equals("hasPermission")) {
+												result = hasPermission(input);
+											}
+											if (expression.equals("inGroup")) {
+												result = inGroup(input);
+											}
 										}
 									} else {
 								//	2.1.2 BRACKETLESS expression
@@ -816,7 +851,7 @@ public class SEinterpreter extends Thread {
 													String tempVar = (String) i.next();
 													// utils.SElog(1, expression+" = "+ "<"+tempVar+">"); // debug
 													
-													SEutils.SElog(1, expression+" = <"+tempVar+">");
+													//SEutils.SElog(1, expression+" = <"+tempVar+">");
 													
 													if (expression.equals("<"+tempVar+">")) {
 														//SEutils.SElog(1, "value: "+tempIntegers.get(tempVar).getValue());
@@ -1269,7 +1304,8 @@ public class SEinterpreter extends Thread {
 					targetPlayer.playEffect(targetPlayer.getLocation(), effect, 0);	
 				}
 			} catch (Exception e) {
-				SEutils.SElog(2, "\""+input[1]+"\": Unvalid effect given in line :" +this.scriptLine);
+				sendError(name, calcFailed);
+				//SEutils.SElog(2, "\""+input[1]+"\": Unvalid effect given in line :" +this.scriptLine);
 			}
 		}
 	}
@@ -1538,7 +1574,8 @@ public class SEinterpreter extends Thread {
 			try {
 				result = String.valueOf(utils.calc(input[0]));
 			} catch (Exception e) {
-				SEutils.SElog(2, "Calculation failed in line: "+this.workingLine);
+				sendError(name, calcFailed);
+				//SEutils.SElog(2, "Calculation failed in line: "+this.workingLine);
 			}
 		}
 		return result;
@@ -1773,7 +1810,7 @@ public class SEinterpreter extends Thread {
 		String result = "null";
 		if (checkInput(name, input.length == 2 || input.length == 3)) {
 			if (inputToPlayer(name, input[0]) != null && inputToInteger(name, input[1]) != "null") {
-				SEutils.SElog(1, "test");
+				//SEutils.SElog(1, "test");
 				Player targetPlayer = inputToPlayer(name, input[0]);
 				int type = Integer.valueOf(inputToInteger(name, input[1]));
 				int amount = 1;
@@ -1945,6 +1982,32 @@ public class SEinterpreter extends Thread {
 			SEcuboid targetCuboid = inputToCuboid(name, input[1]);
 			if (targetPlayer != null && targetCuboid != null) {
 				return String.valueOf(plugin.playerListener.playerInsideCuboid(targetPlayer.getLocation(), targetCuboid) || plugin.playerListener.playerInsideCuboid(targetPlayer.getEyeLocation(), targetCuboid));
+			}
+		}
+		return result;
+	}
+	
+	public String hasPermission(String[] input) {
+		String name = "hasPermission";
+		String result = "null";
+		if (plugin.hasPermissions && checkInput(name, input.length == 3)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Player targetPlayer = inputToPlayer(name, input[1]);
+			if (targetPlayer != null && targetWorld != null) {
+				return String.valueOf(plugin.permissionHandler.has(targetWorld.getName(), targetPlayer.getName(), input[2]));
+			}
+		}
+		return result;
+	}
+	
+	public String inGroup(String[] input) {
+		String name = "inGroup";
+		String result = "null";
+		if (plugin.hasPermissions && checkInput(name, input.length == 3)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Player targetPlayer = inputToPlayer(name, input[1]);
+			if (targetPlayer != null && targetWorld != null) {
+				return String.valueOf(plugin.permissionHandler.inGroup(targetWorld.getName(), targetPlayer.getName(), input[2]));
 			}
 		}
 		return result;
