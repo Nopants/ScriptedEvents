@@ -14,9 +14,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -169,25 +172,30 @@ public class SEplayerListener extends PlayerListener {
 		Player player = event.getPlayer();
 		
 		//---[ onInteract ]-----------------------------------------------------------//
-		// get the triggers matching to the entered Cuboid and the event onEnter
+		// get the triggers matching to event onInteract
 		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onInteract));
 		// release the triggers
-		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));		
-		event.setCancelled(cancel);
-		cancel = false;
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
+		if (cancel) {
+			event.setCancelled(cancel);
+			cancel = false;
+		}
 		//----------------------------------------------------------------------------//
 		
 		if (event.hasBlock()) {
+
+			// debug
+			if (SEdata.getDebugees(player)) {
+				//utils.SEmessage(player, "Location : " + String.valueOf(SEdata.utils.locationToString(event.getClickedBlock().getLocation()))); // debug
+				//utils.SEmessage(player, "Used Item: " + String.valueOf(player.getItemInHand().getTypeId())); // debug
+				utils.SEmessage(player, "Type : " + String.valueOf(event.getClickedBlock().getType())); // debug
+				utils.SEmessage(player, "ID   : " + String.valueOf(event.getClickedBlock().getTypeId())); // debug
+				utils.SEmessage(player, "Data : " + String.valueOf(event.getClickedBlock().getData())); // debug
+				utils.SEmessage(player, "Power: " + String.valueOf(event.getClickedBlock().getBlockPower())); // debug
+				utils.SEmessage(player, "Material: " + event.getMaterial().toString()); // debug
+			}
+			
 			// manage selection
-			if (SEdata.getDebugees(player))
-				utils.SEmessage(player, "Clicked at: "
-						+ String.valueOf(SEdata.utils.locationToString(event.getClickedBlock().getLocation()))); // debug
-			if (SEdata.getDebugees(player))
-				utils.SEmessage(player, "Used Item: "
-						+ String.valueOf(player.getItemInHand().getTypeId())); // debug
-			if (SEdata.getDebugees(player))
-				utils.SEmessage(player, "TriggerItem: "
-						+ plugin.SEdata.getTriggerItem()); // debug
 			if (player.getItemInHand().getTypeId() == plugin.SEdata.getTriggerItem()) {
 				Location location = event.getClickedBlock().getLocation();
 
@@ -236,6 +244,10 @@ public class SEplayerListener extends PlayerListener {
 
 	// is called if a player is teleported
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		Player player = event.getPlayer();
+		resetDist(player);
+		onNewPos(player);
+		
 		//---[ onRespawn ]------------------------------------------------------------//
 		// return the triggers matching to the entered Cuboid and the event onEnter
 		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onRespawn));
@@ -245,6 +257,48 @@ public class SEplayerListener extends PlayerListener {
 			plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
 		}
 		//----------------------------------------------------------------------------//			
+	}
+
+	// is called if player joins the server
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		resetDist(player);
+		onNewPos(player);
+		
+		//---[ onJoin]-----------------------------------------------------------//
+		// get the triggers matching to the event onJoin
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onJoin));
+		// release the triggers
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
+		//----------------------------------------------------------------------------//
+	}
+	
+	// is called if player disconnets from the server
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		resetDist(player);
+		onNewPos(player);
+		
+		//---[ onQuit]-----------------------------------------------------------//
+		// get the triggers matching to the event onQuit
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onQuit));
+		// release the triggers
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
+		//----------------------------------------------------------------------------//
+	}
+	
+	// is called if player is kicked from the server
+	public void onPlayerKick(PlayerKickEvent event) {
+		Player player = event.getPlayer();
+		resetDist(player);
+		onNewPos(player);
+		
+		//---[ onKick]-----------------------------------------------------------//
+		// get the triggers matching to the event onKick
+		Map<String, SEtrigger> triggerList = plugin.triggerManager.getRelevantTriggers(new SEentitySet(SEtrigger.triggerEvent.onKick));
+		// release the triggers
+		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
+		//----------------------------------------------------------------------------//
 	}
 	
 	// is called if a player moves onto another Block
@@ -375,7 +429,9 @@ public class SEplayerListener extends PlayerListener {
 	
 	// is called if a player is teleported
 	public void onPlayerTeleport(PlayerTeleportEvent event) {
-		resetDist(event.getPlayer());
+		Player player = event.getPlayer();
+		resetDist(player);
+		onNewPos(player);
 	}
 
 	// is called if a player uses a portal

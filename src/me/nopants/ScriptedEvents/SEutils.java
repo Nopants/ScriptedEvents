@@ -19,6 +19,7 @@ import me.nopants.ScriptedEvents.type.entities.SEtrigger.triggerEvent;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class SEutils {
@@ -72,20 +73,30 @@ public class SEutils {
 	
 	// returns an ItemStack if the player has a the item with the itemID
 	public ItemStack searchItem(Player player, int itemID, int amount) {
-		ItemStack tempItem = null;
+		ItemStack result = null;
 		if (player != null) {
 			
 			if ((player.getItemInHand()!=null) && (player.getItemInHand().getTypeId() == itemID) && (player.getItemInHand().getAmount() >= amount)) {
-				tempItem = player.getItemInHand();
+				result = player.getItemInHand();
 			} else {
-				for (int i=39;i>=0;i--) {
-					//SElog(1, "i: "+i); // debug
-					if ((player.getInventory().getItem(i)!=null) && (player.getInventory().getItem(i).getTypeId() == itemID) && (player.getInventory().getItem(i).getAmount() >= amount))
-						tempItem = player.getInventory().getItem(i);
-				}	
+				result = searchItem(player.getInventory(), itemID, amount);	
 			}
 		}
-		return tempItem;
+		return result;
+	}
+	
+	// returns an ItemStack if the inventory contains the item with the itemID
+	public ItemStack searchItem(Inventory inventory, int itemID, int amount) {
+		ItemStack result = null;
+		if (inventory != null) {
+			ItemStack[] contents = inventory.getContents();
+			for (int i=contents.length-1;i>=0;i--) {
+				//SElog(1, "i: "+i); // debug
+				if ((contents[i]!=null) && (contents[i].getTypeId() == itemID) && (contents[i].getAmount() >= amount))
+					result = contents[i];
+			}
+		}
+		return result;
 	}
 	
 	public int calc(String math) throws Exception {
@@ -180,7 +191,11 @@ public class SEutils {
 		if (input.equalsIgnoreCase("onBlockBreak")) result = triggerEvent.onBlockBreak;
 		if (input.equalsIgnoreCase("onBlockPlace")) result = triggerEvent.onBlockPlace;
 		if (input.equalsIgnoreCase("onRespawn")) result = triggerEvent.onRespawn;
-		if (input.equalsIgnoreCase("none")) result = triggerEvent.none;
+		if (input.equalsIgnoreCase("onJoin")) result = triggerEvent.onJoin;
+		if (input.equalsIgnoreCase("onQuit")) result = triggerEvent.onQuit;
+		if (input.equalsIgnoreCase("onKick")) result = triggerEvent.onKick;
+		if (input.equalsIgnoreCase("onDeath")) result = triggerEvent.onDeath;
+		if (input.equalsIgnoreCase("none") || result == null) result = triggerEvent.none;
 		
 		return result;
 	}

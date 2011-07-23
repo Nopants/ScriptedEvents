@@ -6,7 +6,7 @@ import me.nopants.ScriptedEvents.type.SEentitySet;
 public class SEtrigger extends SEentity {
 	private static final long serialVersionUID = 1L;
 	
-	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, onBlockBreak, onBlockPlace, onRespawn, none};
+	public enum triggerEvent {onEnter, onLeave, onInteract, onCommand, onBlockBreak, onBlockPlace, onRespawn, onJoin, onQuit, onKick, onDeath, none};
 	triggerEvent event;
 	private String triggerCommand;
 	private SEcuboid triggerCuboid;
@@ -65,7 +65,7 @@ public class SEtrigger extends SEentity {
 		if (tempEntity == null)
 			result = "name:"+this.name+",owner:"+this.owner+",event:"+this.event.toString()+",condition:"+tempCondition+",script:"+tempScript;
 		else
-			result = "name:"+this.name+",owner:"+this.owner+"event:"+this.event.toString()+"("+tempEntity+"),condition:"+tempCondition+",script:"+tempScript;
+			result = "name:"+this.name+",owner:"+this.owner+",event:"+this.event.toString()+"("+tempEntity+"),condition:"+tempCondition+",script:"+tempScript;
 		return result;
 	}
 

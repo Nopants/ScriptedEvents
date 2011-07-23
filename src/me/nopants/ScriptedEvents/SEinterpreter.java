@@ -20,12 +20,16 @@ import me.nopants.ScriptedEvents.type.entities.variables.SEstring;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Door;
+import org.bukkit.material.TrapDoor;
 
 public class SEinterpreter extends Thread {
 	
@@ -104,7 +108,10 @@ public class SEinterpreter extends Thread {
 			"changeBlockData",
 			"playerCommand",
 			"playEffect",
-			"teleport"
+			"teleport",
+			"setTime",
+			"toggleDoor",
+			"toggleLever"
 			));
 
 	// all worldActions:
@@ -201,7 +208,12 @@ public class SEinterpreter extends Thread {
 			"and",
 			"or",
 			"check",
-			"hasItem"
+			"hasItem",
+			"online",
+			"isEmpty",
+			"isOpen",
+			"isSwitchedOn",
+			"isInside"
 			));
 
 	// VARIABLES
@@ -221,7 +233,8 @@ public class SEinterpreter extends Thread {
 			"<placedBlockData>",
 			"<brokenBlockID>",
 			"<brokenBlockLocation>",
-			"<brokenBlockData>"
+			"<brokenBlockData>",
+			"<deathCause>"
 			));
 
 	@SuppressWarnings("serial")
@@ -421,12 +434,12 @@ public class SEinterpreter extends Thread {
 			// insert SYNTAX here //
 			//--------------------//			
 			
-			// BRACKETS are correct
-			if (correctBrackets(line)) {
-				
-				// remove comments
-				if (line.contains("#"))
-					line = line.substring(0, line.indexOf("#"));
+			// remove comments
+			if (line.contains("#"))
+				line = line.substring(0, line.indexOf("#"));
+			
+			// BRACKETS are correct OR hole line is a comment
+			if (line.startsWith("#") || correctBrackets(line)) {
 				
 				// ignore subscripts or comment-lines
 				if (! (line.startsWith("|") || line.startsWith("#") || line.isEmpty())) {
@@ -549,6 +562,15 @@ public class SEinterpreter extends Thread {
 											if (expression.equals("teleport")) {
 												teleport(input);
 											}
+											if (expression.equals("setTime")) {
+												setTime(input);
+											}
+											if (expression.equals("toggleDoor")) {
+												toggleDoor(input);
+											}
+											if (expression.equals("toggleLever")) {
+												toggleLever(input);
+											}
 											
 											// SCRIPT ACTIONS
 											//===============
@@ -660,6 +682,21 @@ public class SEinterpreter extends Thread {
 											if (expression.equals("check")) {
 												result = check(input);
 											}
+											if (expression.equals("online")) {
+												result = online(input);
+											}
+											if (expression.equals("isEmpty")) {
+												result = isEmpty(input);
+											}
+											if (expression.equals("isOpen")) {
+												result = isOpen(input);
+											}
+											if (expression.equals("isSwitchedOn")) {
+												result = isSwitchedOn(input);
+											}
+											if (expression.equals("isInside")) {
+												result = isInside(input);
+											}
 										}
 									} else {
 								//	2.1.2 BRACKETLESS expression
@@ -741,6 +778,13 @@ public class SEinterpreter extends Thread {
 												}
 												if (expression.equals("<brokenBlockLocation>")) {
 													result = breakBlockLocation;
+												}
+											}
+											
+											// Death-related variables
+											if (entitySet.deathEvent != null) {
+												if (expression.equals("<deathCause>")) {
+														result = entitySet.deathCause;
 												}
 											}
 											
@@ -1061,32 +1105,26 @@ public class SEinterpreter extends Thread {
 		
 	}
 
-	// removeItem(<player>,<type>[,<amount>])
+	// removeItem(<world>,<location> | <player>,<type>[,<amount>])
 	public void removeItem(String[] input) {
-		String name = "removeItem";
-		if (checkInput(name, input.length == 2 || input.length == 3)) {
-			Player targetPlayer = inputToPlayer(name, input[0]);
-			if (targetPlayer != null && inputToInteger(name, input[1])!="null") {
-				
-				
-				int removeAmount = 1;
-				if (input.length==3 && inputToInteger(name, input[2]) != "null") {
-					removeAmount = Integer.valueOf(inputToInteger(name, input[2]));
-					
-				}
-				
-				ItemStack tempItem = utils.searchItem(targetPlayer, Integer.valueOf(inputToInteger(name, input[1])), removeAmount);
-				
-				if (tempItem!=null) {
-					if ((tempItem.getAmount()-removeAmount)<=0)
-						targetPlayer.getInventory().removeItem(tempItem);
-					else {
-						tempItem.setAmount(tempItem.getAmount()-removeAmount);
-					}
-							
-				}		
-			}
-		}
+	    String name = "removeItem";
+	    if (checkInput(name, (input.length == 2) || (input.length == 3))) {
+	    	Player targetPlayer = inputToPlayer(name, input[0]);
+	    	if ((targetPlayer != null) && (inputToInteger(name, input[1]) != "null")) {
+	    		int removeAmount = 1;
+	    		if ((input.length == 3) && (inputToInteger(name, input[2]) != "null")) {
+	    			removeAmount = Integer.valueOf(inputToInteger(name, input[2])).intValue();
+	    		}
+
+	    		ItemStack tempItem = this.utils.searchItem(targetPlayer, Integer.valueOf(inputToInteger(name, input[1])).intValue(), removeAmount);
+
+	    		if (tempItem != null)
+	    			if (tempItem.getAmount() - removeAmount <= 0)
+	    				targetPlayer.getInventory().removeItem(new ItemStack[] { tempItem });
+	    			else
+	    				tempItem.setAmount(tempItem.getAmount() - removeAmount);
+	    	}
+	    }
 	}
 	
 	// removeItemAt(<player>,<slot>[,<amount>])
@@ -1249,6 +1287,75 @@ public class SEinterpreter extends Thread {
 		return result;
 	}
 	
+	public String setTime(String[] input) {
+		String name = "setTime";
+		String result = "null";
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			String time = inputToInteger(name, input[1]);
+			if (targetWorld!= null && time != "null") {
+				targetWorld.setTime(Integer.valueOf(time));
+			}
+		}
+		return result;
+	}
+	
+	public String toggleDoor(String[] input) {
+		String name = "toggleDoor";
+		String result = "null";
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
+			if (targetWorld!= null && targetLocation != null) {
+				targetLocation.setWorld(targetWorld);
+				Block block = targetLocation.getBlock();
+			
+				if (block.getType().equals(Material.WOOD_DOOR) || block.getType().equals(Material.WOODEN_DOOR) || block.getType().equals(Material.IRON_DOOR) || block.getType().equals(Material.IRON_DOOR_BLOCK)) {
+					Door door = (Door)block.getState().getData();
+					//Swing the door open/shut
+		            block.setData((byte)(block.getState().getData().getData()^4));
+		            Block neighbor;
+		            if (door.isTopHalf())
+		                neighbor = block.getRelative(BlockFace.DOWN);
+		            else
+		                neighbor = block.getRelative(BlockFace.UP);
+		            neighbor.setData((byte)(neighbor.getState().getData().getData()^4));
+				}
+				
+				if (block.getType().equals(Material.TRAP_DOOR)) {
+					//Swing the door open/shut
+		            block.setData((byte)(block.getState().getData().getData()^4));
+				}
+			}
+		}
+		return result;
+	}
+	
+	public String toggleLever(String[] input) {
+		String name = "toggleLever";
+		String result = "null";
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
+			if (targetWorld!= null && targetLocation != null) {
+				targetLocation.setWorld(targetWorld);
+				Block block = targetLocation.getBlock();
+				
+				if (block.getType().equals(Material.LEVER)) {
+					//toggle the Lever
+			        byte data = block.getData();
+			        int on = data | 0x8;
+			        int off = data & 0x7;
+			        if(data == on){
+			        	block.setData((byte) off, true);
+			        } else {
+			        	block.setData((byte) on, true);
+			        }
+				}
+			}
+		}
+		return result;
+	}
 	
 	//----------------//
 	// SCRIPT ACTIONS //
@@ -1509,11 +1616,15 @@ public class SEinterpreter extends Thread {
 		if (checkInput(name, input.length == 1)) {
 			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer != null) {
+				/*
 				ItemStack itemInHand = targetPlayer.getItemInHand();
+				ItemStack[] contents = targetPlayer.getInventory().getContents();
 				for (int i=0;i<=8;i++) {
-					if (itemInHand.equals(targetPlayer.getInventory().getContents()[i]))
+					if (itemInHand.equals(contents[i]))
 						result = String.valueOf(i);
 				}
+				*/
+				result = String.valueOf(targetPlayer.getInventory().getHeldItemSlot());
 			}
 		}
 		return result;
@@ -1754,6 +1865,90 @@ public class SEinterpreter extends Thread {
 		return result;
 	}
 	
+	public String online(String[] input) {
+		String name = "online";
+		String result = "null";
+		if (checkInput(name, input.length == 1)) {
+			result = "false";
+			Player[] onlinePlayers = plugin.getServer().getOnlinePlayers();
+			String playerName = input[0];
+			for (int i = 0; ((i < onlinePlayers.length) && (result == "false")) ; i++) {
+				if (onlinePlayers[i].getName().equals(playerName)) {
+					result = "true";
+				}
+			}
+		}
+		return result;
+	}
+	
+	public String isEmpty(String[] input) {
+		String name = "isEmpty";
+		String result = "null";
+		if (checkInput(name, input.length == 1)) {
+			SEset tempSet = inputToSet(name, input[0]);
+			if (tempSet!=null) {
+				result = String.valueOf(tempSet.getValues().isEmpty());
+			}
+		}
+		return result;
+	}
+	
+	public String isOpen(String[] input) {
+		String name = "isOpen";
+		String result = "null";
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
+			if (targetWorld != null && targetLocation != null) {
+				targetLocation.setWorld(targetWorld);
+				Block block = targetLocation.getBlock();
+				
+				if (block.getType().equals(Material.WOOD_DOOR) || block.getType().equals(Material.WOODEN_DOOR) || block.getType().equals(Material.IRON_DOOR) || block.getType().equals(Material.IRON_DOOR_BLOCK)) {
+					Door door = (Door)block.getState().getData();
+					result = String.valueOf(!door.isOpen());
+				}
+				
+				if (block.getType().equals(Material.TRAP_DOOR)) {
+					TrapDoor door = (TrapDoor)block.getState().getData();
+					result = String.valueOf(door.isOpen());
+				}
+			}
+		}
+		return result;
+	}
+	
+	public String isSwitchedOn(String[] input) {
+		String name = "isOn";
+		String result = "null";
+		if (checkInput(name, input.length == 2)) {
+			World targetWorld = inputToWorld(name, input[0]);
+			Location targetLocation = inputToLocation(name, input[1]);
+			if (targetWorld != null && targetLocation != null) {
+				targetLocation.setWorld(targetWorld);
+				Block block = targetLocation.getBlock();
+				
+				if (block.getType().equals(Material.LEVER)) {
+			        byte data = block.getData();
+			        int on = data | 0x8;
+			        return String.valueOf(data == on);
+				}
+			}
+		}
+		return result;
+	}
+
+	public String isInside(String[] input) {
+		String name = "isInside";
+		String result = "null";
+		if (checkInput(name, input.length == 2)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			SEcuboid targetCuboid = inputToCuboid(name, input[1]);
+			if (targetPlayer != null && targetCuboid != null) {
+				return String.valueOf(plugin.playerListener.playerInsideCuboid(targetPlayer.getLocation(), targetCuboid) || plugin.playerListener.playerInsideCuboid(targetPlayer.getEyeLocation(), targetCuboid));
+			}
+		}
+		return result;
+	}
 	
 	//-----------//
 	// OLD STUFF //

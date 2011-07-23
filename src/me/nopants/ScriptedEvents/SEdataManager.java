@@ -873,7 +873,7 @@ public class SEdataManager {
 	public void write(File file, String x) {
 		try {
 			Writer out = new OutputStreamWriter(new FileOutputStream(file,true));
-		    out.write(x+System.getProperty("line.separator"));
+		    out.write(System.getProperty("line.separator")+x);
 		    out.close();	
 		} catch (Exception e) {
 			SEutils.SElog(3, "Could not write to '"+file.getName()+"'!");

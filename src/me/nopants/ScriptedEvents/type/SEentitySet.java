@@ -10,7 +10,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 public class SEentitySet {
@@ -36,9 +40,14 @@ public class SEentitySet {
 	public String setItem = null;
 	public String name = null;
 	public String oldName = null;
+	public String deathCause = null;
 	
 	public PlayerInteractEvent interactEvent = null;
 	public PlayerRespawnEvent respawnEvent = null;
+	public PlayerJoinEvent joinEvent = null;
+	public PlayerQuitEvent quitEvent = null;
+	public PlayerKickEvent kickEvent = null;
+	public EntityDeathEvent deathEvent = null;
 	public BlockBreakEvent blockBreakEvent = null;
 	public BlockPlaceEvent blockPlaceEvent = null;
 		
@@ -89,6 +98,31 @@ public class SEentitySet {
 	public SEentitySet(PlayerRespawnEvent newRespawnEvent) {
 		this.respawnEvent = newRespawnEvent;
 		this.player = respawnEvent.getPlayer();
+	}
+	
+	//onJoin
+	public SEentitySet(PlayerJoinEvent newJoinEvent) {
+		this.joinEvent = newJoinEvent;
+		this.player = joinEvent.getPlayer();
+	}
+	
+	//onQuit
+	public SEentitySet(PlayerQuitEvent newQuitEvent) {
+		this.quitEvent = newQuitEvent;
+		this.player = quitEvent.getPlayer();
+	}
+	
+	//onKick
+	public SEentitySet(PlayerKickEvent newKickEvent) {
+		this.kickEvent = newKickEvent;
+		this.player = kickEvent.getPlayer();
+	}
+	
+	//onDeath
+	public SEentitySet(EntityDeathEvent newDeathEvent, String newDeathCause) {
+		this.deathEvent = newDeathEvent;
+		this.player = (Player)deathEvent.getEntity();
+		this.deathCause = newDeathCause;
 	}
 	
 	//onBlockBreak

@@ -18,6 +18,7 @@ public class ScriptedEvents extends JavaPlugin {
 	public SEutils utils;
 	public SEplayerListener playerListener;
 	public SEblockListener blockListener;
+	public SEentityListener entityListener;
 	public SEtriggerManager triggerManager;
 	public PermissionHandler permissionHandler;
 	public boolean hasPermissions = false;
@@ -42,6 +43,7 @@ public class ScriptedEvents extends JavaPlugin {
 		commander = new SEcommander(this);
 		playerListener = new SEplayerListener(this);
 		blockListener = new SEblockListener(this);
+		entityListener = new SEentityListener(this);
 		triggerManager = new SEtriggerManager(this);
 		
 		pm = this.getServer().getPluginManager();
@@ -57,10 +59,21 @@ public class ScriptedEvents extends JavaPlugin {
 				Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener,
 				Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener,
+				Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener,
+				Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.PLAYER_KICK, playerListener,
+				Event.Priority.Normal, this);
 		
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener,
 				Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener,
+				Event.Priority.Normal, this);
+		
+		pm.registerEvent(Event.Type.ENTITY_DEATH, entityListener,
+				Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener,
 				Event.Priority.Normal, this);
 		
 		SEdata.initializeData();
