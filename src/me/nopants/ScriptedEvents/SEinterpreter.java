@@ -106,6 +106,7 @@ public class SEinterpreter extends Thread {
 			"giveItemAt",
 			"setHealth",
 			"messageTo",
+			"broadcast",
 			"changeBlockType",
 			"changeBlockData",
 			"playerCommand",
@@ -190,6 +191,9 @@ public class SEinterpreter extends Thread {
 			"isInBed",
 			"isSneaking",
 			"playerLocation",
+			"playerLocationX",
+			"playerLocationY",
+			"playerLocationZ",
 			"blockID",
 			"blockData",
 			"calc",
@@ -228,15 +232,28 @@ public class SEinterpreter extends Thread {
 			"<triggeringPlayer>",
 			"<triggeringCuboid>",
 			"<cuboidBlockLocation>",
+			"<cuboidBlockLocationX>",
+			"<cuboidBlockLocationY>",
+			"<cuboidBlockLocationZ>",
 			"<clickedLocation>",
+			"<clickedLocationX>",
+			"<clickedLocationY>",
+			"<clickedLocationZ>",
+			"<clickedLocationID>",
 			"<rightClick>",
 			"<randomInt>",
 			"<setItem>",
 			"<placedBlockID>",
 			"<placedBlockLocation>",
+			"<placedBlockLocationX>",
+			"<placedBlockLocationY>",
+			"<placedBlockLocationZ>",
 			"<placedBlockData>",
 			"<brokenBlockID>",
 			"<brokenBlockLocation>",
+			"<brokenBlockLocationX>",
+			"<brokenBlockLocationY>",
+			"<brokenBlockLocationZ>",
 			"<brokenBlockData>",
 			"<deathCause>"
 			));
@@ -354,7 +371,7 @@ public class SEinterpreter extends Thread {
 		timeStamp = timeStamp.substring(0, timeStamp.length()-4);
 		String message;
 		
-		SEutils.SElog(1, plugin.SEdata.ErrorDestination); // debug
+		// SEutils.SElog(1, plugin.SEdata.ErrorDestination); // debug
 		
 		// create Error-Message
 		if (expression != null && workingPlace != null) {
@@ -383,6 +400,15 @@ public class SEinterpreter extends Thread {
 				}
 			}
 			plugin.SEdata.write(errorLogFile, timeStamp+": "+message);
+		}
+		
+		// send Error to Player
+		if (plugin.SEdata.ErrorDestination.startsWith("PLAYER")) {
+			Player errorPlayer = utils.stringToPlayer(plugin.getServer().getOnlinePlayers(), plugin.SEdata.ErrorDestination.substring(6));
+			//SEutils.SElog(1, plugin.SEdata.ErrorDestination.substring(6));
+			if (errorPlayer != null) {
+				utils.SEmessage(errorPlayer, "§4"+message);
+			}
 		}
 	}
 	
@@ -576,6 +602,9 @@ public class SEinterpreter extends Thread {
 											if (expression.equals("messageTo")) {
 												messageTo(input);
 											}
+											if (expression.equals("broadcast")) {
+												broadcast(input);
+											}
 											if (expression.equals("changeBlockType")) {
 												changeBlockType(input);
 											}
@@ -675,6 +704,15 @@ public class SEinterpreter extends Thread {
 											if (expression.equals("playerLocation")) {
 												result = playerLocation(input);
 											}
+											if (expression.equals("playerLocationX")) {
+												result = playerLocationX(input);
+											}
+											if (expression.equals("playerLocationY")) {
+												result = playerLocationY(input);
+											}
+											if (expression.equals("playerLocationZ")) {
+												result = playerLocationZ(input);
+											}
 											if (expression.equals("size")) {
 												result = size(input);
 											}
@@ -760,6 +798,18 @@ public class SEinterpreter extends Thread {
 												if (entitySet.location != null)
 													result = utils.locationToString(entitySet.location);
 											}
+											if (expression.equals("<cuboidBlockLocationX>")) {
+												if (entitySet.location != null)
+													result = String.valueOf(entitySet.location.getBlockX());
+											}
+											if (expression.equals("<cuboidBlockLocationY>")) {
+												if (entitySet.location != null)
+													result = String.valueOf(entitySet.location.getBlockY());
+											}
+											if (expression.equals("<cuboidBlockLocationZ>")) {
+												if (entitySet.location != null)
+													result = String.valueOf(entitySet.location.getBlockZ());
+											}
 											if (expression.equals("<setItem>")) {
 												if (entitySet.setItem != null)
 													result = entitySet.setItem;
@@ -769,13 +819,39 @@ public class SEinterpreter extends Thread {
 												boolean rightClick = (entitySet.interactEvent.getAction().equals(Action.RIGHT_CLICK_AIR)||entitySet.interactEvent.getAction().equals(Action.RIGHT_CLICK_BLOCK));
 												
 												String clickedLocation;
-												if (entitySet.interactEvent.hasBlock())
+												String clickedLocationX;
+												String clickedLocationY;
+												String clickedLocationZ;
+												String clickedLocationID;
+												if (entitySet.interactEvent.hasBlock()) {
 													clickedLocation = utils.locationToString(entitySet.interactEvent.getClickedBlock().getLocation());
-												else
+													clickedLocationX = String.valueOf(entitySet.interactEvent.getClickedBlock().getLocation().getBlockX());
+													clickedLocationY = String.valueOf(entitySet.interactEvent.getClickedBlock().getLocation().getBlockY());
+													clickedLocationZ = String.valueOf(entitySet.interactEvent.getClickedBlock().getLocation().getBlockZ());
+													clickedLocationID = String.valueOf(entitySet.interactEvent.getClickedBlock().getTypeId());
+												}
+												else {
 													clickedLocation = "none";
-												
+													clickedLocationX = "none";
+													clickedLocationY = "none";
+													clickedLocationZ = "none";
+													clickedLocationID = "none";
+												}
+													
+												if (expression.equals("<clickedLocationID>")) {
+													result = clickedLocationID;
+												}
 												if (expression.equals("<clickedLocation>")) {
 														result = clickedLocation;
+												}
+												if (expression.equals("<clickedLocationX>")) {
+													result = clickedLocationX;
+												}
+												if (expression.equals("<clickedLocationY>")) {
+													result = clickedLocationY;
+												}
+												if (expression.equals("<clickedLocationZ>")) {
+													result = clickedLocationZ;
 												}
 												if (expression.equals("<rightClick>")) {
 													result = String.valueOf(rightClick);
@@ -785,6 +861,9 @@ public class SEinterpreter extends Thread {
 											if (entitySet.blockPlaceEvent != null) {
 												Block placedBlock = entitySet.blockPlaceEvent.getBlockPlaced();
 												String placedBlockLocation = utils.locationToString(placedBlock.getLocation());
+												String placedBlockLocationX = String.valueOf(placedBlock.getLocation().getBlockX());
+												String placedBlockLocationY = String.valueOf(placedBlock.getLocation().getBlockY());
+												String placedBlockLocationZ = String.valueOf(placedBlock.getLocation().getBlockZ());
 												String placedBlockID = String.valueOf(placedBlock.getTypeId());
 												String placedBlockData = String.valueOf(placedBlock.getData());
 												
@@ -797,11 +876,23 @@ public class SEinterpreter extends Thread {
 												if (expression.equals("<placedBlockLocation>")) {
 													result = placedBlockLocation;
 												}
+												if (expression.equals("<placedBlockLocationX>")) {
+													result = placedBlockLocationX;
+												}
+												if (expression.equals("<placedBlockLocationY>")) {
+													result = placedBlockLocationY;
+												}
+												if (expression.equals("<placedBlockLocationZ>")) {
+													result = placedBlockLocationZ;
+												}
 											}
 											// BlockBreak-related variables
 											if (entitySet.blockBreakEvent != null) {
 												Block breakBlock = entitySet.blockBreakEvent.getBlock();
 												String breakBlockLocation = utils.locationToString(breakBlock.getLocation());
+												String breakBlockLocationX = String.valueOf(breakBlock.getLocation().getBlockX());
+												String breakBlockLocationY = String.valueOf(breakBlock.getLocation().getBlockY());
+												String breakBlockLocationZ = String.valueOf(breakBlock.getLocation().getBlockZ());
 												String breakBlockID = String.valueOf(entitySet.typeID);
 												String breakBlockData = String.valueOf(entitySet.data);
 												
@@ -813,6 +904,15 @@ public class SEinterpreter extends Thread {
 												}
 												if (expression.equals("<brokenBlockLocation>")) {
 													result = breakBlockLocation;
+												}
+												if (expression.equals("<brokenBlockLocationX>")) {
+													result = breakBlockLocationX;
+												}
+												if (expression.equals("<brokenBlockLocationY>")) {
+													result = breakBlockLocationY;
+												}
+												if (expression.equals("<brokenBlockLocationZ>")) {
+													result = breakBlockLocationZ;
 												}
 											}
 											
@@ -1122,7 +1222,8 @@ public class SEinterpreter extends Thread {
 	
 	// cancelEvent() cancels the fired bukkit-event 
 	public void cancelEvent() {
-		playerListener.cancel = true;
+		SEutils.SElog(1, "cancelEvent");
+		playerListener.setCancel(true);
 	}
 	
 	public void removeItemInHand(String[] input) {
@@ -1248,6 +1349,13 @@ public class SEinterpreter extends Thread {
 		}
 	}
 	
+	public void broadcast(String[] input) {
+		String name = "broadcast";
+		if (checkInput(name, input.length == 1)) {
+			plugin.getServer().broadcastMessage(input[0]);
+		}		
+	}
+	
 	public void changeBlockType(String[] input) {
 		String name = "changeBlockType";
 		if (checkInput(name, input.length == 3)) {
@@ -1313,9 +1421,11 @@ public class SEinterpreter extends Thread {
 	public String teleport(String[] input) {
 		String name = "teleport";
 		String result = "null";
-		if (checkInput(name, input.length == 2)) {
+		if (checkInput(name, input.length == 3)) {
 			Player targetPlayer = inputToPlayer(name, input[0]);
-			Location targetLocation = inputToLocation(name, input[1]);
+			World targetWorld = inputToWorld(name, input[1]);
+			Location targetLocation = inputToLocation(name, input[2]);
+			targetLocation.setWorld(targetWorld);
 			if (targetPlayer!= null && targetLocation != null) {
 				targetPlayer.teleport(targetLocation);
 			}
@@ -1731,6 +1841,39 @@ public class SEinterpreter extends Thread {
 			Player targetPlayer = inputToPlayer(name, input[0]);
 			if (targetPlayer!= null)
 				result = utils.locationToString(targetPlayer.getLocation());
+		}
+		return result;
+	}
+	
+	public String playerLocationX(String[] input) {
+		String name = "playerLocationX";
+		String result = "null";
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer!= null)
+				result = String.valueOf(targetPlayer.getLocation().getBlockX());
+		}
+		return result;
+	}
+	
+	public String playerLocationY(String[] input) {
+		String name = "playerLocationY";
+		String result = "null";
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer!= null)
+				result = String.valueOf(targetPlayer.getLocation().getBlockY());
+		}
+		return result;
+	}
+	
+	public String playerLocationZ(String[] input) {
+		String name = "playerLocationZ";
+		String result = "null";
+		if (checkInput(name, input.length == 1)) {
+			Player targetPlayer = inputToPlayer(name, input[0]);
+			if (targetPlayer!= null)
+				result = String.valueOf(targetPlayer.getLocation().getBlockZ());
 		}
 		return result;
 	}

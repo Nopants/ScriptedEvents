@@ -1305,7 +1305,8 @@ public class SEcommander {
 									plugin.SEdata.rewriteIntVarFile();
 									plugin.SEdata.refreshIntVarList();
 									
-									utils.SEmessage(sender, "Value changed!");
+									if (sender instanceof Player)
+										utils.SEmessage(sender, "Value changed!");
 									result = true;
 									
 								} catch (Exception e) {

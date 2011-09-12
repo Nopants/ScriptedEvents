@@ -39,6 +39,12 @@ public class SEplayerListener extends PlayerListener {
 	private ScriptedEvents plugin;
 	public boolean cancel = false;
 
+	public void setCancel(boolean cancel) {
+		this.cancel = cancel;
+	}
+
+
+
 	public SEplayerListener(ScriptedEvents SEplugin) {
 		plugin = SEplugin;
 		SEdata = plugin.SEdata;
@@ -177,7 +183,8 @@ public class SEplayerListener extends PlayerListener {
 		// release the triggers
 		plugin.triggerManager.releaseTriggerList(triggerList, new SEentitySet(event));
 		if (cancel) {
-			event.setCancelled(cancel);
+			SEutils.SElog(1, String.valueOf(cancel)); // debug
+			event.setCancelled(true);
 			cancel = false;
 		}
 		//----------------------------------------------------------------------------//
@@ -196,7 +203,10 @@ public class SEplayerListener extends PlayerListener {
 			}
 			
 			// manage selection
-			if (player.getItemInHand().getTypeId() == plugin.SEdata.getTriggerItem()) {
+			
+			
+			
+			if ( (player.getItemInHand().getTypeId() == plugin.SEdata.getTriggerItem()) && ((plugin.commander.hasPermissions && plugin.commander.permissionHandler.has(player, "se.cuboid.create")) || player.isOp())) {
 				Location location = event.getClickedBlock().getLocation();
 
 				if (event.getAction() == Action.LEFT_CLICK_BLOCK) {

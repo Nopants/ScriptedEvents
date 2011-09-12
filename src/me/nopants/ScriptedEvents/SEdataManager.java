@@ -64,7 +64,8 @@ public class SEdataManager {
 	
 	Set<String> ErrorDestinations = new HashSet<String> (Arrays.asList(
 			"LOG",
-			"FILE"
+			"FILE",
+			"PLAYER"
 			));
 	
 	private ScriptedEvents plugin;
@@ -608,7 +609,7 @@ public class SEdataManager {
 				writeConfig("ErrorDestination", "LOG");
 				ErrorDestination = "LOG";
 			}
-			if (!ErrorDestinations.contains(ErrorDestination)) {
+			if (! (ErrorDestinations.contains(ErrorDestination) || ErrorDestination.startsWith("PLAYER"))) {
 				SEutils.SElog(2, "Invalid 'ErrorDestination' found in config.yml. Defaulting to 'LOG'!");
 				ErrorDestination = "LOG";
 			}
